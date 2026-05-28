@@ -67,3 +67,27 @@ Additionally, make sure that the following extensions are enabled in your PHP:
 - json (enabled by default - don't turn it off)
 - [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
 - [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+
+## Block 1 Phase 1 Baseline
+
+This repository now includes the Block 1 Phase 1 security baseline:
+
+- Standard JSON API response contract (`status`, `message`, `data`, `errors`).
+- Protected route filter with authentication guardrails.
+- Login identifier policy baseline that accepts **email** and **phone** identifiers.
+- Authentication abstraction designed to use CodeIgniter Shield when installed.
+
+### Endpoints
+
+- `GET /auth/login`
+- `GET /auth/identifier/{identifier}`
+- `GET /internal/dashboard` (protected)
+
+### Notes for deployment
+
+In restricted environments where Packagist is not reachable, Shield package installation may fail. Once network access is available, install Shield and complete package setup:
+
+```bash
+composer require codeigniter4/shield
+php spark shield:setup
+```
