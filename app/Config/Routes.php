@@ -24,3 +24,16 @@ $routes->group('internal', ['filter' => 'protectedAuth'], static function ($rout
     // Tenant context must resolve before accessing tenant-sensitive internals.
     $routes->get('tenant-context', 'Internal\\TenantContextController::show', ['filter' => 'tenantContext:required']);
 });
+
+
+$routes->group('tenant/config', ['filter' => 'protectedAuth,tenantContext:required'], static function ($routes) {
+    // Phase 3 tenant configuration foundation endpoints.
+    $routes->post('profile', 'Tenant\ConfigurationController::profileUpsert');
+    $routes->post('academic-sessions', 'Tenant\ConfigurationController::createAcademicSession');
+    $routes->post('semesters', 'Tenant\ConfigurationController::createSemester');
+    $routes->post('levels', 'Tenant\ConfigurationController::createLevel');
+    $routes->post('departments', 'Tenant\ConfigurationController::createDepartment');
+    $routes->post('programmes', 'Tenant\ConfigurationController::createProgramme');
+    $routes->post('courses', 'Tenant\ConfigurationController::createCourse');
+    $routes->post('programme-courses', 'Tenant\ConfigurationController::mapProgrammeCourse');
+});
