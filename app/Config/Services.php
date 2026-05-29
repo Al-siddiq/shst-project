@@ -2,8 +2,10 @@
 
 namespace Config;
 
+use App\Services\NavigationResolver;
 use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
+use App\Services\TenantAccessService;
 use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
@@ -24,5 +26,23 @@ class Services extends BaseService
         }
 
         return new TenantContextManager();
+    }
+
+    public static function tenantAccess(bool $getShared = true): TenantAccessService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('tenantAccess');
+        }
+
+        return new TenantAccessService();
+    }
+
+    public static function navigationResolver(bool $getShared = true): NavigationResolver
+    {
+        if ($getShared) {
+            return static::getSharedInstance('navigationResolver');
+        }
+
+        return new NavigationResolver();
     }
 }

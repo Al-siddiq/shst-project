@@ -36,6 +36,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'protectedAuth' => \App\Filters\ProtectedAuthFilter::class,
         'tenantContext' => \App\Filters\TenantContextFilter::class,
+        'tenantAccess'  => \App\Filters\TenantAccessFilter::class,
     ];
 
     /**

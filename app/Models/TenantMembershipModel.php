@@ -13,6 +13,8 @@ class TenantMembershipModel extends Model
     protected $allowedFields    = [
         'tenant_id',
         'user_id',
+        'status',
+        'membership_label',
         'is_active',
         'is_default',
         'created_by',

@@ -37,3 +37,16 @@ $routes->group('tenant/config', ['filter' => 'protectedAuth,tenantContext:requir
     $routes->post('courses', 'Tenant\ConfigurationController::createCourse');
     $routes->post('programme-courses', 'Tenant\ConfigurationController::mapProgrammeCourse');
 });
+
+
+$routes->group('tenant/access', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:tenant.access.manage'], static function ($routes) {
+    // Phase 4 access-control foundation endpoints.
+    $routes->post('memberships', 'Tenant\AccessController::createMembership');
+    $routes->post('groups', 'Tenant\AccessController::assignGroup');
+    $routes->post('authorities', 'Tenant\AccessController::createAuthority');
+    $routes->post('authority-grants', 'Tenant\AccessController::grantAuthority');
+});
+
+$routes->get('tenant/navigation', 'Tenant\AccessController::navigation', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess',
+]);
