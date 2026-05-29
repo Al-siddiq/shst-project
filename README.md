@@ -91,3 +91,23 @@ In restricted environments where Packagist is not reachable, Shield package inst
 composer require codeigniter4/shield
 php spark shield:setup
 ```
+
+### Block 1 Demo Seed Data
+
+After running the Block 1 migrations, load a controlled demo dataset for full Block 1 smoke testing:
+
+```bash
+php spark db:seed Block1DemoSeeder
+```
+
+The seeder creates two tenants (`demo-sht-lagos` and `sample-chs-kano`) with tenant domains, tenant profiles, academic sessions, semesters, levels, departments, programmes, courses, programme-course mappings, memberships, IAM group assignments, operational authorities, authority grants, tenant themes, department identities, and audit log entries.
+
+Demo actor IDs used by the seed data:
+
+- `1` — platform admin reference
+- `2` — tenant admin for `demo-sht-lagos`
+- `3` — lecturer placeholder for `demo-sht-lagos`
+- `4` — student placeholder for `demo-sht-lagos`
+- `5` — tenant admin for `sample-chs-kano`
+
+CodeIgniter Shield owns real authentication identities. In a Shield-enabled environment, create matching test users or update the seeded membership `user_id` values to match your local Shield users before testing protected login flows end-to-end.
