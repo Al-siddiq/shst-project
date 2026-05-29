@@ -50,3 +50,19 @@ $routes->group('tenant/access', ['filter' => 'protectedAuth,tenantContext:requir
 $routes->get('tenant/navigation', 'Tenant\AccessController::navigation', [
     'filter' => 'protectedAuth,tenantContext:required,tenantAccess',
 ]);
+
+
+$routes->group('tenant/theme', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:school.configuration.manage'], static function ($routes) {
+    // Phase 5 tenant theme and department identity endpoints.
+    $routes->get('/', 'Tenant\ThemeController::show');
+    $routes->post('/', 'Tenant\ThemeController::upsertTheme');
+    $routes->post('department-identities', 'Tenant\ThemeController::upsertDepartmentIdentity');
+});
+
+$routes->get('tenant/audit-logs', 'Tenant\AuditController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:tenant.access.manage',
+]);
+
+$routes->get('internal/layout/(:segment)', 'Internal\LayoutController::show/$1', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess',
+]);

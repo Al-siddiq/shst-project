@@ -30,6 +30,7 @@ class AccessController extends BaseController
         $payload['is_active'] = $payload['status'] === 'active' ? 1 : 0;
 
         $id = (new TenantMembershipModel())->insert($this->withTenant($payload), true);
+        $this->audit('tenant.membership.create', 'tenant_membership', $id);
 
         return $this->ok('Tenant membership created.', ['id' => $id], 201);
     }
@@ -48,6 +49,7 @@ class AccessController extends BaseController
         }
 
         $id = (new TenantIamGroupAssignmentModel())->insert($payload, true);
+        $this->audit('tenant.iam_group.assign', 'tenant_iam_group_assignment', $id);
 
         return $this->ok('Tenant IAM group assigned.', ['id' => $id], 201);
     }
@@ -55,13 +57,14 @@ class AccessController extends BaseController
     public function createAuthority()
     {
         $payload = $this->request->getJSON(true) ?? [];
-        $rules = ['code' => 'required|alpha_dash|max_length[120]', 'name' => 'required|max_length[160]'];
+        $rules = ['code' => 'required|regex_match[/^[a-z0-9._-]+$/]|max_length[120]', 'name' => 'required|max_length[160]'];
 
         if (! $this->validateData($payload, $rules)) {
             return $this->fail('Validation failed.', $this->validator->getErrors(), 422);
         }
 
         $id = (new OperationalAuthorityModel())->insert($payload, true);
+        $this->audit('tenant.operational_authority.create', 'operational_authority', $id);
 
         return $this->ok('Operational authority created.', ['id' => $id], 201);
     }
@@ -89,6 +92,7 @@ class AccessController extends BaseController
         }
 
         $id = (new MembershipAuthorityModel())->insert($payload, true);
+        $this->audit('tenant.operational_authority.grant', 'membership_authority', $id);
 
         return $this->ok('Operational authority granted.', ['id' => $id], 201);
     }
@@ -104,5 +108,13 @@ class AccessController extends BaseController
         $payload['tenant_id'] = $context->tenantId;
 
         return $payload;
+    }
+    private function audit(string $action, string $targetType, int|string $targetId): void
+    {
+        service('auditLogger')->record($action, [
+            'target_type' => $targetType,
+            'target_id' => $targetId,
+            'summary' => 'Tenant access configuration changed.',
+        ]);
     }
 }

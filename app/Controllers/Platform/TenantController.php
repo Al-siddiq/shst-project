@@ -39,6 +39,13 @@ class TenantController extends BaseController
         $payload['status'] ??= 'pending_setup';
 
         $id = (new TenantModel())->insert($payload, true);
+        service('auditLogger')->record('platform.tenant.create', [
+            'tenant_id' => $id,
+            'context' => 'platform',
+            'target_type' => 'tenant',
+            'target_id' => $id,
+            'summary' => 'Platform tenant created.',
+        ]);
 
         return $this->ok('Tenant created.', ['tenant_id' => $id], 201);
     }

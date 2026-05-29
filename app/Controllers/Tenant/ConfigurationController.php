@@ -35,10 +35,12 @@ class ConfigurationController extends BaseController
 
         if ($existing) {
             $model->update($existing['id'], $payload);
+            $this->audit('tenant.profile.update', 'tenant_profile', $existing['id']);
             return $this->ok('Tenant profile updated.', ['id' => $existing['id']]);
         }
 
         $id = $model->insert($payload, true);
+        $this->audit('tenant.profile.create', 'tenant_profile', $id);
         return $this->ok('Tenant profile created.', ['id' => $id], 201);
     }
 
@@ -62,6 +64,7 @@ class ConfigurationController extends BaseController
         }
 
         $id = (new ProgrammeModel())->insert($payload, true);
+        $this->audit('tenant.programme.create', 'programme', $id);
         return $this->ok('Programme created.', ['id' => $id], 201);
     }
 
@@ -79,6 +82,7 @@ class ConfigurationController extends BaseController
         }
 
         $id = (new CourseModel())->insert($payload, true);
+        $this->audit('tenant.course.create', 'course', $id);
         return $this->ok('Course created.', ['id' => $id], 201);
     }
 
@@ -111,6 +115,7 @@ class ConfigurationController extends BaseController
         }
 
         $id = (new ProgrammeCourseModel())->insert($payload, true);
+        $this->audit('tenant.programme_course.create', 'programme_course', $id);
         return $this->ok('Programme course mapping created.', ['id' => $id], 201);
     }
 
@@ -123,7 +128,16 @@ class ConfigurationController extends BaseController
         }
 
         $id = $model->insert($payload, true);
+        $this->audit('tenant.configuration.create', $model->getTable(), $id);
 
         return $this->ok('Record created.', ['id' => $id], 201);
+    }
+    private function audit(string $action, string $targetType, int|string $targetId): void
+    {
+        service('auditLogger')->record($action, [
+            'target_type' => $targetType,
+            'target_id' => $targetId,
+            'summary' => 'Tenant configuration changed.',
+        ]);
     }
 }

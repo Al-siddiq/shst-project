@@ -2,7 +2,10 @@
 
 namespace Config;
 
+use App\Services\AuditLogger;
+use App\Services\LayoutResolver;
 use App\Services\NavigationResolver;
+use App\Services\ThemeResolver;
 use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
@@ -44,5 +47,32 @@ class Services extends BaseService
         }
 
         return new NavigationResolver();
+    }
+
+    public static function themeResolver(bool $getShared = true): ThemeResolver
+    {
+        if ($getShared) {
+            return static::getSharedInstance('themeResolver');
+        }
+
+        return new ThemeResolver();
+    }
+
+    public static function layoutResolver(bool $getShared = true): LayoutResolver
+    {
+        if ($getShared) {
+            return static::getSharedInstance('layoutResolver');
+        }
+
+        return new LayoutResolver();
+    }
+
+    public static function auditLogger(bool $getShared = true): AuditLogger
+    {
+        if ($getShared) {
+            return static::getSharedInstance('auditLogger');
+        }
+
+        return new AuditLogger();
     }
 }
