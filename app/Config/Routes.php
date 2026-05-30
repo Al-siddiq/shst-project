@@ -2,5 +2,67 @@
 
 use CodeIgniter\Router\RouteCollection;
 
-/** @var RouteCollection $routes */
+/**
+ * @var RouteCollection $routes
+ */
 $routes->get('/', 'Home::index');
+
+$routes->group('auth', static function ($routes) {
+    $routes->get('login', 'AuthController::login');
+    $routes->get('identifier/(:segment)', 'AuthController::identifierPolicy/$1');
+});
+
+$routes->group('platform', static function ($routes) {
+    // Phase 2 platform tenant onboarding skeleton endpoints.
+    $routes->get('tenants', 'Platform\\TenantController::index');
+    $routes->post('tenants', 'Platform\\TenantController::create');
+});
+
+$routes->group('internal', ['filter' => 'protectedAuth'], static function ($routes) {
+    $routes->get('dashboard', 'Internal\\PortalController::dashboard');
+
+    // Tenant context must resolve before accessing tenant-sensitive internals.
+    $routes->get('tenant-context', 'Internal\\TenantContextController::show', ['filter' => 'tenantContext:required']);
+});
+
+
+$routes->group('tenant/config', ['filter' => 'protectedAuth,tenantContext:required'], static function ($routes) {
+    // Phase 3 tenant configuration foundation endpoints.
+    $routes->post('profile', 'Tenant\ConfigurationController::profileUpsert');
+    $routes->post('academic-sessions', 'Tenant\ConfigurationController::createAcademicSession');
+    $routes->post('semesters', 'Tenant\ConfigurationController::createSemester');
+    $routes->post('levels', 'Tenant\ConfigurationController::createLevel');
+    $routes->post('departments', 'Tenant\ConfigurationController::createDepartment');
+    $routes->post('programmes', 'Tenant\ConfigurationController::createProgramme');
+    $routes->post('courses', 'Tenant\ConfigurationController::createCourse');
+    $routes->post('programme-courses', 'Tenant\ConfigurationController::mapProgrammeCourse');
+});
+
+
+$routes->group('tenant/access', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:tenant.access.manage'], static function ($routes) {
+    // Phase 4 access-control foundation endpoints.
+    $routes->post('memberships', 'Tenant\AccessController::createMembership');
+    $routes->post('groups', 'Tenant\AccessController::assignGroup');
+    $routes->post('authorities', 'Tenant\AccessController::createAuthority');
+    $routes->post('authority-grants', 'Tenant\AccessController::grantAuthority');
+});
+
+$routes->get('tenant/navigation', 'Tenant\AccessController::navigation', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess',
+]);
+
+
+$routes->group('tenant/theme', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:school.configuration.manage'], static function ($routes) {
+    // Phase 5 tenant theme and department identity endpoints.
+    $routes->get('/', 'Tenant\ThemeController::show');
+    $routes->post('/', 'Tenant\ThemeController::upsertTheme');
+    $routes->post('department-identities', 'Tenant\ThemeController::upsertDepartmentIdentity');
+});
+
+$routes->get('tenant/audit-logs', 'Tenant\AuditController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:tenant.access.manage',
+]);
+
+$routes->get('internal/layout/(:segment)', 'Internal\LayoutController::show/$1', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess',
+]);

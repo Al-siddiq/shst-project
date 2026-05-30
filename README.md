@@ -67,3 +67,47 @@ Additionally, make sure that the following extensions are enabled in your PHP:
 - json (enabled by default - don't turn it off)
 - [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
 - [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+
+## Block 1 Phase 1 Baseline
+
+This repository now includes the Block 1 Phase 1 security baseline:
+
+- Standard JSON API response contract (`status`, `message`, `data`, `errors`).
+- Protected route filter with authentication guardrails.
+- Login identifier policy baseline that accepts **email** and **phone** identifiers.
+- Authentication abstraction designed to use CodeIgniter Shield when installed.
+
+### Endpoints
+
+- `GET /auth/login`
+- `GET /auth/identifier/{identifier}`
+- `GET /internal/dashboard` (protected)
+
+### Notes for deployment
+
+In restricted environments where Packagist is not reachable, Shield package installation may fail. Once network access is available, install Shield and complete package setup:
+
+```bash
+composer require codeigniter4/shield
+php spark shield:setup
+```
+
+### Block 1 Demo Seed Data
+
+After running the Block 1 migrations, load a controlled demo dataset for full Block 1 smoke testing:
+
+```bash
+php spark db:seed Block1DemoSeeder
+```
+
+The seeder creates two tenants (`demo-sht-lagos` and `sample-chs-kano`) with tenant domains, tenant profiles, academic sessions, semesters, levels, departments, programmes, courses, programme-course mappings, memberships, IAM group assignments, operational authorities, authority grants, tenant themes, department identities, and audit log entries.
+
+Demo actor IDs used by the seed data:
+
+- `1` — platform admin reference
+- `2` — tenant admin for `demo-sht-lagos`
+- `3` — lecturer placeholder for `demo-sht-lagos`
+- `4` — student placeholder for `demo-sht-lagos`
+- `5` — tenant admin for `sample-chs-kano`
+
+CodeIgniter Shield owns real authentication identities. In a Shield-enabled environment, create matching test users or update the seeded membership `user_id` values to match your local Shield users before testing protected login flows end-to-end.
