@@ -51,6 +51,12 @@ class AccessController extends BaseController
         $id = (new TenantIamGroupAssignmentModel())->insert($payload, true);
         $this->audit('tenant.iam_group.assign', 'tenant_iam_group_assignment', $id);
 
+        // A tenant super administrator is the default owner of website setup.
+        // Provisioning is idempotent so retries do not duplicate grants.
+        if ($payload['group_name'] === 'tenant_super_admin') {
+            service('websiteAuthorityProvisioner')->provisionTenantSuperAdmin((int) $payload['user_id']);
+        }
+
         return $this->ok('Tenant IAM group assigned.', ['id' => $id], 201);
     }
 

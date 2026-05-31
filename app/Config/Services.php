@@ -9,6 +9,9 @@ use App\Services\ThemeResolver;
 use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
+use App\Services\Website\MediaService;
+use App\Services\Website\PublicTenantGuard;
+use App\Services\Website\WebsiteAuthorityProvisioner;
 use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
@@ -74,5 +77,43 @@ class Services extends BaseService
         }
 
         return new AuditLogger();
+    }
+
+    /**
+     * Shared guard keeps anonymous tenant eligibility consistent for public
+     * pages and media routes without coupling that decision to controllers.
+     */
+    public static function publicTenantGuard(bool $getShared = true): PublicTenantGuard
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicTenantGuard');
+        }
+
+        return new PublicTenantGuard();
+    }
+
+    /**
+     * Shared media service centralizes safe storage, derivatives, and audits.
+     */
+    public static function websiteMedia(bool $getShared = true): MediaService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteMedia');
+        }
+
+        return new MediaService();
+    }
+
+    /**
+     * Provisioning remains a service so onboarding and access-management flows
+     * cannot diverge when granting tenant-super-admin website capabilities.
+     */
+    public static function websiteAuthorityProvisioner(bool $getShared = true): WebsiteAuthorityProvisioner
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteAuthorityProvisioner');
+        }
+
+        return new WebsiteAuthorityProvisioner();
     }
 }

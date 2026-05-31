@@ -66,3 +66,21 @@ $routes->get('tenant/audit-logs', 'Tenant\AuditController::index', [
 $routes->get('internal/layout/(:segment)', 'Internal\LayoutController::show/$1', [
     'filter' => 'protectedAuth,tenantContext:required,tenantAccess',
 ]);
+
+
+// Phase 0 Block 2 media foundation. Public delivery resolves and validates the
+// tenant before the controller performs a tenant-scoped visibility lookup.
+$routes->get('media/(:num)/(:segment)', 'PublicSite\\MediaController::show/$1/$2', [
+    'filter' => 'tenantContext,publicTenant',
+]);
+
+$routes->group('tenant/website/media', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.media.manage',
+], static function ($routes) {
+    // Physical file handling remains behind authorized endpoints because
+    // browsers must never submit or infer filesystem paths.
+    $routes->post('upload', 'Tenant\Website\MediaController::upload');
+    $routes->patch('(:num)/visibility', 'Tenant\Website\MediaController::updateVisibility/$1');
+    $routes->delete('(:num)', 'Tenant\Website\MediaController::delete/$1');
+    $routes->get('(:num)/private', 'Tenant\Website\MediaController::showPrivate/$1');
+});
