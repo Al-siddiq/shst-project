@@ -11,7 +11,12 @@ use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
 use App\Services\Website\MediaService;
 use App\Services\Website\PublicTenantGuard;
+use App\Services\Website\PublicWebsiteCache;
+use App\Services\Website\PublicWebsiteService;
+use App\Services\Website\PublicWebsiteUrlGenerator;
 use App\Services\Website\WebsiteAuthorityProvisioner;
+use App\Services\Website\WebsiteMenuService;
+use App\Services\Website\WebsiteSettingsService;
 use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
@@ -102,6 +107,56 @@ class Services extends BaseService
         }
 
         return new MediaService();
+    }
+
+    /** Tenant-aware public URL rules belong outside views and controllers. */
+    public static function publicWebsiteUrl(bool $getShared = true): PublicWebsiteUrlGenerator
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicWebsiteUrl');
+        }
+
+        return new PublicWebsiteUrlGenerator();
+    }
+
+    /** Tenant namespaces are mandatory for every public-site cache entry. */
+    public static function publicWebsiteCache(bool $getShared = true): PublicWebsiteCache
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicWebsiteCache');
+        }
+
+        return new PublicWebsiteCache();
+    }
+
+    /** Resolves tenant profile fallbacks and CMS website settings. */
+    public static function websiteSettings(bool $getShared = true): WebsiteSettingsService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteSettings');
+        }
+
+        return new WebsiteSettingsService();
+    }
+
+    /** Resolves visible, ordered, tenant-owned public menu records. */
+    public static function websiteMenu(bool $getShared = true): WebsiteMenuService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteMenu');
+        }
+
+        return new WebsiteMenuService();
+    }
+
+    /** Builds shared view data for the lightweight server-rendered public site. */
+    public static function publicWebsite(bool $getShared = true): PublicWebsiteService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicWebsite');
+        }
+
+        return new PublicWebsiteService();
     }
 
     /**

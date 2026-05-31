@@ -5,7 +5,21 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
+// Phase 1 tenant public pages remain server-rendered and lightweight. The
+// context filter runs first; PublicTenantFilter then enforces active launch state.
+$routes->group('', ['filter' => 'tenantContext,publicTenant'], static function ($routes) {
+    $routes->get('/', 'PublicSite\HomeController::index');
+    $routes->get('about', 'PublicSite\AboutController::index');
+    $routes->get('contact', 'PublicSite\ContactController::index');
+});
+
+// Explicit slug routes support local development and deployments without a
+// dedicated tenant hostname while preserving exactly the same public services.
+$routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], static function ($routes) {
+    $routes->get('/', 'PublicSite\HomeController::index');
+    $routes->get('about', 'PublicSite\AboutController::index');
+    $routes->get('contact', 'PublicSite\ContactController::index');
+});
 
 $routes->group('auth', static function ($routes) {
     $routes->get('login', 'AuthController::login');
@@ -71,6 +85,9 @@ $routes->get('internal/layout/(:segment)', 'Internal\LayoutController::show/$1',
 // Phase 0 Block 2 media foundation. Public delivery resolves and validates the
 // tenant before the controller performs a tenant-scoped visibility lookup.
 $routes->get('media/(:num)/(:segment)', 'PublicSite\\MediaController::show/$1/$2', [
+    'filter' => 'tenantContext,publicTenant',
+]);
+$routes->get('t/(:segment)/media/(:num)/(:segment)', 'PublicSite\\MediaController::show/$2/$3', [
     'filter' => 'tenantContext,publicTenant',
 ]);
 
