@@ -46,3 +46,16 @@ h2 { font-size: clamp(1.5rem, 4vw, 2.25rem); }
     .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(18rem, .8fr); }
     .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
 }
+
+/* Phase 2 showcase cards use department identity as a visual accent. */
+.card-grid { display: grid; gap: 1rem; }
+.showcase-card { overflow: hidden; border: 1px solid #d1d5db; border-top: .3rem solid var(--department-color, var(--tenant-primary)); border-radius: .65rem; background: #fff; }
+.showcase-card img { width: 100%; height: 12rem; object-fit: cover; }
+.showcase-card div { padding: 1rem; }
+.showcase-card h2 { margin-top: 0; font-size: 1.25rem; }
+.detail-image { width: 100%; max-height: 28rem; border-radius: .75rem; object-fit: cover; }
+.department-header { border-bottom: .35rem solid var(--department-color, var(--tenant-accent)); }
+.filter-row { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.5rem; }
+.notice { padding: 1rem; border-left: .25rem solid var(--tenant-accent); background: #f3f4f6; }
+@media (min-width: 42rem) { .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 68rem) { .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

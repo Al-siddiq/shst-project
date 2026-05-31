@@ -11,12 +11,14 @@ use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
 use App\Services\Website\MediaService;
 use App\Services\Website\PublicTenantGuard;
+use App\Services\Website\PublicShowcaseService;
 use App\Services\Website\PublicWebsiteCache;
 use App\Services\Website\PublicWebsiteService;
 use App\Services\Website\PublicWebsiteUrlGenerator;
 use App\Services\Website\WebsiteAuthorityProvisioner;
 use App\Services\Website\WebsiteMenuService;
 use App\Services\Website\WebsiteSettingsService;
+use App\Services\Website\ShowcaseManagementService;
 use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
@@ -157,6 +159,26 @@ class Services extends BaseService
         }
 
         return new PublicWebsiteService();
+    }
+
+    /** Resolves published academic showcase records for anonymous visitors. */
+    public static function publicShowcase(bool $getShared = true): PublicShowcaseService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicShowcase');
+        }
+
+        return new PublicShowcaseService();
+    }
+
+    /** Owns tenant-admin showcase writes, publication checks, audits, and cache invalidation. */
+    public static function showcaseManagement(bool $getShared = true): ShowcaseManagementService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('showcaseManagement');
+        }
+
+        return new ShowcaseManagementService();
     }
 
     /**

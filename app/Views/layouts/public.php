@@ -67,6 +67,7 @@ $heroMediaId = isset($settings['hero_media_id']) ? (int) $settings['hero_media_i
                 <strong>Quick links</strong>
                 <p><a href="<?= esc(public_site_url('about')) ?>">About us</a></p>
                 <p><a href="<?= esc(public_site_url('contact')) ?>">Contact us</a></p>
+                <p><a href="<?= esc(public_site_url('admissions')) ?>">Admissions</a></p>
                 <?php if ($applicationUrl !== null): ?><p><a href="<?= esc($applicationUrl) ?>"><?= esc($settings['application_cta_label']) ?></a></p><?php endif ?>
             </div>
         </div>

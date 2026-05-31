@@ -11,6 +11,11 @@ $routes->group('', ['filter' => 'tenantContext,publicTenant'], static function (
     $routes->get('/', 'PublicSite\HomeController::index');
     $routes->get('about', 'PublicSite\AboutController::index');
     $routes->get('contact', 'PublicSite\ContactController::index');
+    $routes->get('departments', 'PublicSite\DepartmentController::index');
+    $routes->get('departments/(:segment)', 'PublicSite\DepartmentController::show/$1');
+    $routes->get('programmes', 'PublicSite\ProgrammeController::index');
+    $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
+    $routes->get('admissions', 'PublicSite\AdmissionController::index');
 });
 
 // Explicit slug routes support local development and deployments without a
@@ -19,6 +24,11 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
     $routes->get('/', 'PublicSite\HomeController::index');
     $routes->get('about', 'PublicSite\AboutController::index');
     $routes->get('contact', 'PublicSite\ContactController::index');
+    $routes->get('departments', 'PublicSite\DepartmentController::index');
+    $routes->get('departments/(:segment)', 'PublicSite\DepartmentController::show/$1');
+    $routes->get('programmes', 'PublicSite\ProgrammeController::index');
+    $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
+    $routes->get('admissions', 'PublicSite\AdmissionController::index');
 });
 
 $routes->group('auth', static function ($routes) {
@@ -100,4 +110,18 @@ $routes->group('tenant/website/media', [
     $routes->patch('(:num)/visibility', 'Tenant\Website\MediaController::updateVisibility/$1');
     $routes->delete('(:num)', 'Tenant\Website\MediaController::delete/$1');
     $routes->get('(:num)/private', 'Tenant\Website\MediaController::showPrivate/$1');
+});
+
+
+// Phase 2 tenant-admin forms edit public extensions only. Operational academic
+// records remain managed by Block 1 configuration endpoints.
+$routes->group('tenant/website/showcase', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.edit',
+], static function ($routes) {
+    $routes->get('departments', 'Tenant\Website\ShowcaseController::departments');
+    $routes->post('departments', 'Tenant\Website\ShowcaseController::saveDepartment');
+    $routes->get('programmes', 'Tenant\Website\ShowcaseController::programmes');
+    $routes->post('programmes', 'Tenant\Website\ShowcaseController::saveProgramme');
+    $routes->get('admissions', 'Tenant\Website\ShowcaseController::admissions');
+    $routes->post('admissions', 'Tenant\Website\ShowcaseController::saveAdmissions');
 });

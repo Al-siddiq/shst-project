@@ -22,6 +22,11 @@ class PublicWebsiteUrlGenerator
         'home' => '',
         'about' => 'about',
         'contact' => 'contact',
+        'departments' => 'departments',
+        'department' => 'departments',
+        'programmes' => 'programmes',
+        'programme' => 'programmes',
+        'admissions' => 'admissions',
     ];
 
     public function route(string $name, array $parameters = []): string

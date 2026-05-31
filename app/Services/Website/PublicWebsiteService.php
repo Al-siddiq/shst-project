@@ -11,7 +11,7 @@ namespace App\Services\Website;
 class PublicWebsiteService
 {
     /** @return array<string, mixed> */
-    public function page(string $routeName, string $pageTitle = ''): array
+    public function page(string $routeName, string $pageTitle = '', array $routeParameters = []): array
     {
         $settings = service('websiteSettings')->publicSettings();
 
@@ -22,7 +22,7 @@ class PublicWebsiteService
             'pageTitle' => $pageTitle,
             'metaTitle' => $pageTitle !== '' ? $pageTitle . ' | ' . $settings['site_title'] : ($settings['seo_title'] ?? $settings['site_title']),
             'metaDescription' => $settings['seo_description'] ?? $settings['about_summary'] ?? '',
-            'canonicalUrl' => service('publicWebsiteUrl')->canonical($routeName),
+            'canonicalUrl' => service('publicWebsiteUrl')->canonical($routeName, $routeParameters),
         ];
     }
 }
