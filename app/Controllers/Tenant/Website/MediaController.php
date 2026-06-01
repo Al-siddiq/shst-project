@@ -18,6 +18,13 @@ class MediaController extends BaseController
 {
     use ApiResponseTrait;
 
+    public function index(): string
+    {
+        // The server-rendered catalogue works without JavaScript; the companion
+        // script progressively adds upload progress and copyable picker IDs.
+        return view('tenant/website/media/index', ['mediaFiles' => service('websiteMedia')->library()]);
+    }
+
     public function upload()
     {
         $upload = $this->request->getFile('file');

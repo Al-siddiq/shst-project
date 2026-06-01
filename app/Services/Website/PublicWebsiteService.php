@@ -29,6 +29,7 @@ class PublicWebsiteService
             // Homepage aggregation is optional and tenant-scoped. Empty sections
             // are omitted by the view instead of rendering filler content.
             $data['editorial'] = service('publicEditorial')->homepage();
+            $data['galleryAlbums'] = service('publicInstitutionalShowcase')->homepage();
         }
 
         return $data;

@@ -30,4 +30,5 @@
     </div>
 </section>
 <?= view('public_site/_homepage_editorial', ['editorial' => $editorial]) ?>
+<?= view('public_site/_homepage_gallery', ['albums' => $galleryAlbums]) ?>
 <?= $this->endSection() ?>

@@ -101,7 +101,23 @@ class MediaService
             'metadata' => ['category' => $category, 'visibility' => $visibility],
         ]);
 
+        $this->invalidateShowcaseCache();
+
         return $this->find((int) $id);
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function library(?string $category = null): array
+    {
+        // The tenant-scoped model is the safe media picker source: browser
+        // callers receive metadata only and can never infer storage paths.
+        $model = new MediaFileModel();
+        if ($category !== null && $category !== '') {
+            $this->assertOption($category, $this->policy()->allowedCategories, 'Unsupported website media category.');
+            $model->where('category', $category);
+        }
+
+        return $model->orderBy('created_at', 'DESC')->findAll();
     }
 
     /** @return array<string, mixed> */
@@ -153,6 +169,8 @@ class MediaService
             'metadata' => ['from' => $media['visibility'], 'to' => $visibility],
         ]);
 
+        $this->invalidateShowcaseCache();
+
         return $this->find($id);
     }
 
@@ -162,6 +180,8 @@ class MediaService
         $derivatives = $this->decodeDerivatives($media);
         (new MediaFileModel())->delete($id);
         $this->removePaths(array_merge([$media['storage_path']], array_values($derivatives)));
+
+        $this->invalidateShowcaseCache();
 
         service('auditLogger')->record('website.media.deleted', [
             'target_type' => 'media_file',
@@ -262,6 +282,12 @@ class MediaService
         if (! in_array($value, $allowed, true)) {
             throw new InvalidArgumentException($message);
         }
+    }
+
+    /** Media visibility changes can alter public gallery eligibility immediately. */
+    private function invalidateShowcaseCache(): void
+    {
+        service('publicWebsiteCache')->bump('institutional.revision');
     }
 
     private function policy(): WebsiteMedia

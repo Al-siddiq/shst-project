@@ -10,6 +10,8 @@ use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
 use App\Services\Website\MediaService;
+use App\Services\Website\InstitutionalShowcaseManagementService;
+use App\Services\Website\PublicInstitutionalShowcaseService;
 use App\Services\Website\EditorialManagementService;
 use App\Services\Website\PublicTenantGuard;
 use App\Services\Website\PublicShowcaseService;
@@ -181,6 +183,20 @@ class Services extends BaseService
         }
 
         return new EditorialManagementService();
+    }
+
+    /** Resolves published management profiles and galleries for visitors. */
+    public static function publicInstitutionalShowcase(bool $getShared = true): PublicInstitutionalShowcaseService
+    {
+        if ($getShared) { return static::getSharedInstance('publicInstitutionalShowcase'); }
+        return new PublicInstitutionalShowcaseService();
+    }
+
+    /** Owns tenant-safe management-profile and gallery CMS mutations. */
+    public static function institutionalShowcaseManagement(bool $getShared = true): InstitutionalShowcaseManagementService
+    {
+        if ($getShared) { return static::getSharedInstance('institutionalShowcaseManagement'); }
+        return new InstitutionalShowcaseManagementService();
     }
 
     /** Resolves published academic showcase records for anonymous visitors. */

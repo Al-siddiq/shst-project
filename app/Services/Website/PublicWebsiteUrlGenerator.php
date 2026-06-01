@@ -33,6 +33,9 @@ class PublicWebsiteUrlGenerator
         'announcement' => 'announcements',
         'calendar' => 'calendar',
         'calendar_notice' => 'calendar',
+        'management' => 'management',
+        'gallery' => 'gallery',
+        'gallery_album' => 'gallery',
     ];
 
     public function route(string $name, array $parameters = []): string
