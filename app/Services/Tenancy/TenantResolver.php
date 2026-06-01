@@ -10,6 +10,11 @@ use CodeIgniter\HTTP\IncomingRequest;
 
 class TenantResolver
 {
+    /**
+     * Resolves context only; anonymous publication eligibility is enforced by
+     * PublicTenantGuard so suspended tenants can still use controlled internal
+     * setup and support flows without exposing a public website.
+     */
     public function resolve(IncomingRequest $request): TenantContext
     {
         // Priority 1: Custom domain mapping

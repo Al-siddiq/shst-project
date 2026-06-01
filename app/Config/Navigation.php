@@ -14,19 +14,19 @@ class Navigation extends BaseConfig
         [
             'label' => 'Dashboard',
             'route' => '/internal/dashboard',
-            'groups' => ['tenant_admin', 'lecturer', 'student'],
+            'groups' => ['tenant_super_admin', 'tenant_admin', 'lecturer', 'student'],
             'authorities' => [],
         ],
         [
             'label' => 'School Configuration',
             'route' => '/tenant/config/profile',
-            'groups' => ['tenant_admin'],
+            'groups' => ['tenant_super_admin', 'tenant_admin'],
             'authorities' => ['school.configuration.manage'],
         ],
         [
             'label' => 'Access Control',
             'route' => '/tenant/access/memberships',
-            'groups' => ['tenant_admin'],
+            'groups' => ['tenant_super_admin', 'tenant_admin'],
             'authorities' => ['tenant.access.manage'],
         ],
     ];

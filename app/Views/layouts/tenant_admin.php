@@ -1,7 +1,5 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Tenant Admin</title></head>
-<body data-layout="tenant-admin">
-    <main><?= $this->renderSection('content') ?></main>
-</body>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tenant Admin</title><style>body{font-family:system-ui,sans-serif;margin:0;color:#172033}a{color:#075985}.skip-link{position:absolute;left:-9999px}.skip-link:focus{left:1rem;top:1rem;background:#fff;padding:.5rem}.admin-nav{display:flex;gap:.75rem;overflow:auto;padding:1rem;background:#eef2ff}.admin-main{max-width:76rem;margin:auto;padding:1rem}label{display:block;margin:.7rem 0}input,textarea,select,button{max-width:100%;padding:.5rem}textarea{min-height:6rem}.admin-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))}.admin-card{padding:1rem;border:1px solid #d1d5db;border-radius:.5rem}.inline-form{display:inline-block}</style></head>
+<body data-layout="tenant-admin"><a class="skip-link" href="#admin-content">Skip to content</a><nav class="admin-nav" aria-label="Website administration"><a href="<?= site_url('tenant/website') ?>">Dashboard</a><a href="<?= site_url('tenant/website/settings') ?>">Settings</a><a href="<?= site_url('tenant/website/menu') ?>">Menu</a><a href="<?= site_url('tenant/website/media') ?>">Media</a><a href="<?= site_url('tenant/website/audit') ?>">Audit</a></nav><main id="admin-content" class="admin-main"><?= $this->renderSection('content') ?></main></body>
 </html>

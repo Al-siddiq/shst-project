@@ -37,6 +37,7 @@ class Filters extends BaseFilters
         'protectedAuth' => \App\Filters\ProtectedAuthFilter::class,
         'tenantContext' => \App\Filters\TenantContextFilter::class,
         'tenantAccess'  => \App\Filters\TenantAccessFilter::class,
+        'publicTenant'  => \App\Filters\PublicTenantFilter::class,
     ];
 
     /**

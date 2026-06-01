@@ -9,6 +9,24 @@ use App\Services\ThemeResolver;
 use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
+use App\Services\Website\MediaService;
+use App\Services\Website\InstitutionalShowcaseManagementService;
+use App\Services\Website\PublicInstitutionalShowcaseService;
+use App\Services\Website\EditorialManagementService;
+use App\Services\Website\PublicTenantGuard;
+use App\Services\Website\PublicShowcaseService;
+use App\Services\Website\PublicEditorialService;
+use App\Services\Website\PublicWebsiteCache;
+use App\Services\Website\PublicWebsiteService;
+use App\Services\Website\PublicWebsiteUrlGenerator;
+use App\Services\Website\WebsiteAuthorityProvisioner;
+use App\Services\Website\WebsiteMenuService;
+use App\Services\Website\WebsiteSettingsService;
+use App\Services\Website\WebsiteSettingsManagementService;
+use App\Services\Website\WebsiteMenuManagementService;
+use App\Services\Website\WebsiteAuditService;
+use App\Services\Website\WebsiteDashboardService;
+use App\Services\Website\ShowcaseManagementService;
 use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
@@ -74,5 +92,175 @@ class Services extends BaseService
         }
 
         return new AuditLogger();
+    }
+
+    /**
+     * Shared guard keeps anonymous tenant eligibility consistent for public
+     * pages and media routes without coupling that decision to controllers.
+     */
+    public static function publicTenantGuard(bool $getShared = true): PublicTenantGuard
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicTenantGuard');
+        }
+
+        return new PublicTenantGuard();
+    }
+
+    /**
+     * Shared media service centralizes safe storage, derivatives, and audits.
+     */
+    public static function websiteMedia(bool $getShared = true): MediaService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteMedia');
+        }
+
+        return new MediaService();
+    }
+
+    /** Tenant-aware public URL rules belong outside views and controllers. */
+    public static function publicWebsiteUrl(bool $getShared = true): PublicWebsiteUrlGenerator
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicWebsiteUrl');
+        }
+
+        return new PublicWebsiteUrlGenerator();
+    }
+
+    /** Tenant namespaces are mandatory for every public-site cache entry. */
+    public static function publicWebsiteCache(bool $getShared = true): PublicWebsiteCache
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicWebsiteCache');
+        }
+
+        return new PublicWebsiteCache();
+    }
+
+    /** Builds tenant-admin website completion metrics and operational counts. */
+    public static function websiteDashboard(bool $getShared = true): WebsiteDashboardService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteDashboard'); }
+        return new WebsiteDashboardService();
+    }
+
+    /** Owns validated tenant website settings writes. */
+    public static function websiteSettingsManagement(bool $getShared = true): WebsiteSettingsManagementService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteSettingsManagement'); }
+        return new WebsiteSettingsManagementService();
+    }
+
+    /** Owns tenant-safe public navigation writes and ordering. */
+    public static function websiteMenuManagement(bool $getShared = true): WebsiteMenuManagementService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteMenuManagement'); }
+        return new WebsiteMenuManagementService();
+    }
+
+    /** Provides website-only tenant audit filtering. */
+    public static function websiteAudit(bool $getShared = true): WebsiteAuditService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteAudit'); }
+        return new WebsiteAuditService();
+    }
+
+    /** Resolves tenant profile fallbacks and CMS website settings. */
+    public static function websiteSettings(bool $getShared = true): WebsiteSettingsService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteSettings');
+        }
+
+        return new WebsiteSettingsService();
+    }
+
+    /** Resolves visible, ordered, tenant-owned public menu records. */
+    public static function websiteMenu(bool $getShared = true): WebsiteMenuService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteMenu');
+        }
+
+        return new WebsiteMenuService();
+    }
+
+    /** Builds shared view data for the lightweight server-rendered public site. */
+    public static function publicWebsite(bool $getShared = true): PublicWebsiteService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicWebsite');
+        }
+
+        return new PublicWebsiteService();
+    }
+
+    /** Resolves published and due-scheduled editorial content for visitors. */
+    public static function publicEditorial(bool $getShared = true): PublicEditorialService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicEditorial');
+        }
+
+        return new PublicEditorialService();
+    }
+
+    /** Owns editorial drafts, lifecycle commands, audits, and cache invalidation. */
+    public static function editorialManagement(bool $getShared = true): EditorialManagementService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('editorialManagement');
+        }
+
+        return new EditorialManagementService();
+    }
+
+    /** Resolves published management profiles and galleries for visitors. */
+    public static function publicInstitutionalShowcase(bool $getShared = true): PublicInstitutionalShowcaseService
+    {
+        if ($getShared) { return static::getSharedInstance('publicInstitutionalShowcase'); }
+        return new PublicInstitutionalShowcaseService();
+    }
+
+    /** Owns tenant-safe management-profile and gallery CMS mutations. */
+    public static function institutionalShowcaseManagement(bool $getShared = true): InstitutionalShowcaseManagementService
+    {
+        if ($getShared) { return static::getSharedInstance('institutionalShowcaseManagement'); }
+        return new InstitutionalShowcaseManagementService();
+    }
+
+    /** Resolves published academic showcase records for anonymous visitors. */
+    public static function publicShowcase(bool $getShared = true): PublicShowcaseService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicShowcase');
+        }
+
+        return new PublicShowcaseService();
+    }
+
+    /** Owns tenant-admin showcase writes, publication checks, audits, and cache invalidation. */
+    public static function showcaseManagement(bool $getShared = true): ShowcaseManagementService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('showcaseManagement');
+        }
+
+        return new ShowcaseManagementService();
+    }
+
+    /**
+     * Provisioning remains a service so onboarding and access-management flows
+     * cannot diverge when granting tenant-super-admin website capabilities.
+     */
+    public static function websiteAuthorityProvisioner(bool $getShared = true): WebsiteAuthorityProvisioner
+    {
+        if ($getShared) {
+            return static::getSharedInstance('websiteAuthorityProvisioner');
+        }
+
+        return new WebsiteAuthorityProvisioner();
     }
 }

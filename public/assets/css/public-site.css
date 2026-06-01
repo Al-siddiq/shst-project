@@ -1,0 +1,78 @@
+/* Mobile-first public shell. Tenant colors are injected as CSS variables by the layout. */
+:root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #1f2937; background: #fff; }
+a { color: var(--tenant-primary); }
+.container { width: min(100% - 2rem, 72rem); margin-inline: auto; }
+.narrow { max-width: 48rem; }
+.skip-link { position: absolute; left: -9999px; top: 0; padding: .75rem; background: #fff; z-index: 10; }
+.skip-link:focus { left: .5rem; }
+.site-header { background: var(--tenant-secondary); color: #fff; }
+.header-row { min-height: 4.5rem; display: flex; gap: 1rem; align-items: center; justify-content: space-between; }
+.brand { color: #fff; display: flex; gap: .75rem; align-items: center; text-decoration: none; }
+.brand small { display: block; opacity: .85; }
+.brand-mark { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 50%; background: var(--tenant-accent); color: #111827; font-weight: 800; }
+.menu-toggle { border: 1px solid rgba(255,255,255,.7); background: transparent; color: #fff; border-radius: .4rem; padding: .55rem .7rem; font: inherit; }
+.site-nav { display: none; position: absolute; inset: 4.5rem 0 auto; padding: 1rem; background: var(--tenant-secondary); z-index: 5; }
+.site-nav.is-open { display: block; }
+.site-nav ul { list-style: none; margin: 0 0 .75rem; padding: 0; }
+.site-nav ul ul { margin: 0 0 0 .75rem; padding-left: .5rem; border-left: 1px solid rgba(255,255,255,.35); }
+.site-nav a { color: #fff; display: block; padding: .6rem; text-decoration: none; }
+.hero, .page-header { color: #fff; background: linear-gradient(135deg, var(--tenant-secondary), var(--tenant-primary)); }
+.hero { padding: 4rem 0; }
+.hero-grid { display: grid; gap: 2rem; align-items: center; }
+.hero-image { width: 100%; max-height: 24rem; border-radius: .75rem; object-fit: cover; }
+.page-header { padding: 2.5rem 0; }
+h1, h2 { line-height: 1.15; }
+h1 { font-size: clamp(2rem, 7vw, 4rem); margin: .25rem 0 1rem; }
+h2 { font-size: clamp(1.5rem, 4vw, 2.25rem); }
+.eyebrow { color: var(--tenant-accent); font-size: .8rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.lead { font-size: 1.1rem; max-width: 42rem; }
+.action-row { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.button { display: inline-block; border: 1px solid var(--tenant-accent); border-radius: .45rem; padding: .7rem 1rem; background: var(--tenant-accent); color: #111827; font-weight: 700; text-decoration: none; }
+.button-outline { background: transparent; color: #fff; }
+.section { padding: 3rem 0; }
+.content-stack > * + * { margin-top: 2rem; }
+.text-link { font-weight: 700; }
+.contact-card { display: grid; gap: 1rem; padding: 1.25rem; border: 1px solid #d1d5db; border-radius: .75rem; }
+.contact-card p { margin: .25rem 0 0; }
+.site-footer { padding: 2.5rem 0; background: #111827; color: #e5e7eb; }
+.site-footer a { color: #fff; }
+.footer-grid { display: grid; gap: 1.5rem; }
+@media (min-width: 52rem) {
+    .menu-toggle { display: none; }
+    .site-nav { display: flex; position: static; align-items: center; gap: 1rem; padding: 0; }
+    .site-nav ul { display: flex; align-items: center; gap: .25rem; margin: 0; }
+    .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(18rem, .8fr); }
+    .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
+}
+
+/* Phase 2 showcase cards use department identity as a visual accent. */
+.card-grid { display: grid; gap: 1rem; }
+.showcase-card { overflow: hidden; border: 1px solid #d1d5db; border-top: .3rem solid var(--department-color, var(--tenant-primary)); border-radius: .65rem; background: #fff; }
+.showcase-card img { width: 100%; height: 12rem; object-fit: cover; }
+.showcase-card div { padding: 1rem; }
+.showcase-card h2 { margin-top: 0; font-size: 1.25rem; }
+.detail-image { width: 100%; max-height: 28rem; border-radius: .75rem; object-fit: cover; }
+.department-header { border-bottom: .35rem solid var(--department-color, var(--tenant-accent)); }
+.filter-row { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.5rem; }
+.notice { padding: 1rem; border-left: .25rem solid var(--tenant-accent); background: #f3f4f6; }
+@media (min-width: 42rem) { .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 68rem) { .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Phase 3 editorial cards stay compact for low-bandwidth mobile browsing. */
+.section-muted { background: #f8fafc; }
+.section-heading { display: flex; gap: 1rem; align-items: center; justify-content: space-between; }
+.editorial-card { overflow: hidden; border: 1px solid #d1d5db; border-radius: .65rem; background: #fff; }
+.editorial-card img { width: 100%; height: 11rem; object-fit: cover; }
+.editorial-card div { padding: 1rem; }
+.editorial-card h3 { margin: .25rem 0; font-size: 1.2rem; }
+.pagination { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+.pagination a { min-width: 2.25rem; padding: .4rem .6rem; border: 1px solid #d1d5db; border-radius: .35rem; text-align: center; }
+.pagination a[aria-current="page"] { border-color: var(--tenant-primary); background: var(--tenant-primary); color: #fff; }
+.inline-form { display: inline-block; margin: .25rem; }
+/* Phase 4 gallery uses responsive derivatives and a mobile-first masonry-like grid. */
+.gallery-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.gallery-grid figure, .gallery-preview { margin: 0; overflow: hidden; border-radius: .65rem; background: #fff; box-shadow: 0 .15rem .6rem #0002; }
+.gallery-grid img, .gallery-preview img { width: 100%; height: 13rem; object-fit: cover; }
+.gallery-grid figcaption, .gallery-preview strong { display: block; padding: .75rem; }

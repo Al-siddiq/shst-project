@@ -2,6 +2,7 @@
 
 namespace App\Database\Seeds;
 
+use App\Services\Website\WebsiteAuthorityCatalog;
 use CodeIgniter\Database\Seeder;
 
 class Block1DemoSeeder extends Seeder
@@ -133,12 +134,12 @@ class Block1DemoSeeder extends Seeder
     {
         $users = $slug === 'demo-sht-lagos'
             ? [
-                self::USERS['tenant_admin'] => ['Tenant Administrator', 'tenant_admin'],
+                self::USERS['tenant_admin'] => ['Tenant Super Administrator', 'tenant_super_admin'],
                 self::USERS['lecturer'] => ['Lecturer Placeholder', 'lecturer'],
                 self::USERS['student'] => ['Student Placeholder', 'student'],
             ]
             : [
-                self::USERS['second_tenant_admin'] => ['Second Tenant Administrator', 'tenant_admin'],
+                self::USERS['second_tenant_admin'] => ['Second Tenant Super Administrator', 'tenant_super_admin'],
             ];
 
         foreach ($users as $userId => [$label, $group]) {
@@ -148,7 +149,7 @@ class Block1DemoSeeder extends Seeder
                 'status' => 'active',
                 'membership_label' => $label,
                 'is_active' => 1,
-                'is_default' => $group === 'tenant_admin' ? 1 : 0,
+                'is_default' => in_array($group, ['tenant_admin', 'tenant_super_admin'], true) ? 1 : 0,
             ] + $this->timestamps());
 
             $this->findOrInsert('tenant_iam_group_assignments', [
@@ -286,6 +287,9 @@ class Block1DemoSeeder extends Seeder
             'school.configuration.manage' => 'Manage school configuration',
             'tenant.access.manage' => 'Manage tenant access control',
             'academic.configuration.manage' => 'Manage academic setup',
+            // Website authorities are provisioned per tenant so the existing
+            // operational authority model remains the single authorization source.
+            ...WebsiteAuthorityCatalog::AUTHORITIES,
         ];
 
         $authorityIds = [];
@@ -294,7 +298,7 @@ class Block1DemoSeeder extends Seeder
                 'tenant_id' => $tenantId,
                 'code' => $code,
                 'name' => $name,
-                'description' => 'Demo Block 1 authority for ' . $name . '.',
+                'description' => 'Demo tenant authority for ' . $name . '.',
                 'is_active' => 1,
             ] + $this->timestamps());
         }
