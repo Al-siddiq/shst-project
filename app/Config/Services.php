@@ -22,6 +22,10 @@ use App\Services\Website\PublicWebsiteUrlGenerator;
 use App\Services\Website\WebsiteAuthorityProvisioner;
 use App\Services\Website\WebsiteMenuService;
 use App\Services\Website\WebsiteSettingsService;
+use App\Services\Website\WebsiteSettingsManagementService;
+use App\Services\Website\WebsiteMenuManagementService;
+use App\Services\Website\WebsiteAuditService;
+use App\Services\Website\WebsiteDashboardService;
 use App\Services\Website\ShowcaseManagementService;
 use CodeIgniter\Config\BaseService;
 
@@ -133,6 +137,34 @@ class Services extends BaseService
         }
 
         return new PublicWebsiteCache();
+    }
+
+    /** Builds tenant-admin website completion metrics and operational counts. */
+    public static function websiteDashboard(bool $getShared = true): WebsiteDashboardService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteDashboard'); }
+        return new WebsiteDashboardService();
+    }
+
+    /** Owns validated tenant website settings writes. */
+    public static function websiteSettingsManagement(bool $getShared = true): WebsiteSettingsManagementService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteSettingsManagement'); }
+        return new WebsiteSettingsManagementService();
+    }
+
+    /** Owns tenant-safe public navigation writes and ordering. */
+    public static function websiteMenuManagement(bool $getShared = true): WebsiteMenuManagementService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteMenuManagement'); }
+        return new WebsiteMenuManagementService();
+    }
+
+    /** Provides website-only tenant audit filtering. */
+    public static function websiteAudit(bool $getShared = true): WebsiteAuditService
+    {
+        if ($getShared) { return static::getSharedInstance('websiteAudit'); }
+        return new WebsiteAuditService();
     }
 
     /** Resolves tenant profile fallbacks and CMS website settings. */

@@ -35,6 +35,16 @@ class PublicWebsiteCache
         cache()->delete($this->key($key));
     }
 
+    /** @param list<string> $keys */
+    public function forgetMany(array $keys): void
+    {
+        // Each deletion still passes through key(), preserving the mandatory
+        // tenant namespace even when one CMS write affects several fragments.
+        foreach ($keys as $key) {
+            $this->forget($key);
+        }
+    }
+
     /**
      * Advances a tenant-scoped cache generation. Versioned keys make every
      * paginated editorial cache entry unreachable after one lifecycle change.

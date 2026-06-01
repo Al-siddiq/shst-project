@@ -192,3 +192,22 @@ $routes->group('tenant/website/institutional/gallery', ['filter' => 'csrf,protec
     $routes->post('albums/(:num)/reorder', 'Tenant\Website\InstitutionalShowcaseController::reorderItems/$1');
     $routes->post('items/(:num)/remove', 'Tenant\Website\InstitutionalShowcaseController::removeItem/$1');
 });
+
+// Phase 5 operational CMS routes expose tenant-only maintenance surfaces. Each
+// service repeats authorization so future JSON or CLI callers cannot bypass it.
+$routes->get('tenant/website', 'Tenant\Website\DashboardController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:website.dashboard.view',
+]);
+$routes->group('tenant/website/settings', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.settings.manage'], static function ($routes) {
+    $routes->get('/', 'Tenant\Website\SettingsController::index');
+    $routes->post('/', 'Tenant\Website\SettingsController::save');
+});
+$routes->group('tenant/website/menu', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.menu.manage'], static function ($routes) {
+    $routes->get('/', 'Tenant\Website\MenuController::index');
+    $routes->post('/', 'Tenant\Website\MenuController::save');
+    $routes->post('reorder', 'Tenant\Website\MenuController::reorder');
+    $routes->post('(:num)/archive', 'Tenant\Website\MenuController::archive/$1');
+});
+$routes->get('tenant/website/audit', 'Tenant\Website\AuditController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:website.audit.view',
+]);

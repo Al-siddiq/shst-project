@@ -1,0 +1,7 @@
+<?= $this->extend('layouts/tenant_admin') ?><?= $this->section('content') ?>
+<h1>Website dashboard</h1><p><strong><?= $enabled ? 'Public website enabled' : 'Public website disabled' ?></strong> — <a href="<?= esc($publicUrl) ?>"><?= esc($publicUrl) ?></a></p><p>Setup completion: <strong><?= esc($completion) ?>%</strong></p>
+<section class="admin-grid" aria-label="Website setup checklist"><?php foreach($checklist as $label=>$complete): ?><article class="admin-card"><strong><?= $complete?'✓':'○' ?> <?= esc(str_replace('_',' ',$label)) ?></strong></article><?php endforeach ?></section>
+<h2>Editorial status</h2><div class="admin-grid"><?php foreach($contentCounts as $status=>$count): ?><article class="admin-card"><strong><?= esc($count) ?></strong><br><?= esc($status) ?></article><?php endforeach ?></div>
+<h2>Institutional showcase</h2><p>Published department profiles: <?= esc($profileCounts['departments']) ?>. Published programme profiles: <?= esc($profileCounts['programmes']) ?>. Public gallery albums: <?= esc($galleryCounts['albums']) ?>. Public gallery images: <?= esc($galleryCounts['images']) ?>.</p>
+<h2>Scheduled publication queue</h2><ul><?php foreach($scheduledQueue as $item): ?><li><?= esc($item['title']) ?> — <?= esc($item['scheduled_for']) ?></li><?php endforeach ?></ul><h2>Recent website audit events</h2><ul><?php foreach($recentAudit as $event): ?><li><?= esc($event['action']) ?> — <?= esc($event['created_at']) ?></li><?php endforeach ?></ul>
+<?= $this->endSection() ?>

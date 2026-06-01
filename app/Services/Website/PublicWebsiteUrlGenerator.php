@@ -94,7 +94,14 @@ class PublicWebsiteUrlGenerator
             $path .= '/' . rawurlencode((string) $parameter);
         }
 
-        return 'https://' . $domain['domain'] . ($path === '' ? '/' : '/' . ltrim($path, '/'));
+        // Domain values originate from tenant configuration, but canonical
+        // output still rejects slashes and invalid host syntax defensively.
+        $host = strtolower((string) $domain['domain']);
+        if (filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false) {
+            return $this->route($name, $parameters);
+        }
+
+        return 'https://' . $host . ($path === '' ? '/' : '/' . ltrim($path, '/'));
     }
 
     private function tenantSlug(TenantContext $context): string
