@@ -27,6 +27,12 @@ class PublicWebsiteUrlGenerator
         'programmes' => 'programmes',
         'programme' => 'programmes',
         'admissions' => 'admissions',
+        'news' => 'news',
+        'news_item' => 'news',
+        'announcements' => 'announcements',
+        'announcement' => 'announcements',
+        'calendar' => 'calendar',
+        'calendar_notice' => 'calendar',
     ];
 
     public function route(string $name, array $parameters = []): string

@@ -16,6 +16,12 @@ $routes->group('', ['filter' => 'tenantContext,publicTenant'], static function (
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('news', 'PublicSite\ContentController::index/news');
+    $routes->get('news/(:segment)', 'PublicSite\ContentController::show/news/$1');
+    $routes->get('announcements', 'PublicSite\ContentController::index/announcements');
+    $routes->get('announcements/(:segment)', 'PublicSite\ContentController::show/announcements/$1');
+    $routes->get('calendar', 'PublicSite\ContentController::index/calendar');
+    $routes->get('calendar/(:segment)', 'PublicSite\ContentController::show/calendar/$1');
 });
 
 // Explicit slug routes support local development and deployments without a
@@ -29,6 +35,12 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('news', 'PublicSite\ContentController::index/news');
+    $routes->get('news/(:segment)', 'PublicSite\ContentController::show/news/$1');
+    $routes->get('announcements', 'PublicSite\ContentController::index/announcements');
+    $routes->get('announcements/(:segment)', 'PublicSite\ContentController::show/announcements/$1');
+    $routes->get('calendar', 'PublicSite\ContentController::index/calendar');
+    $routes->get('calendar/(:segment)', 'PublicSite\ContentController::show/calendar/$1');
 });
 
 $routes->group('auth', static function ($routes) {
@@ -125,3 +137,32 @@ $routes->group('tenant/website/showcase', [
     $routes->get('admissions', 'Tenant\Website\ShowcaseController::admissions');
     $routes->post('admissions', 'Tenant\Website\ShowcaseController::saveAdmissions');
 });
+
+
+// Phase 3 editorial routes keep draft editing and lifecycle commands separate.
+// Filters provide an early HTTP boundary; services repeat authority checks so
+// future CLI or API callers cannot bypass the same policy.
+$routes->group('tenant/website/editorial', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:website.content.view',
+], static function ($routes) {
+    $routes->get('(:segment)', 'Tenant\Website\EditorialController::index/$1');
+    $routes->get('(:segment)/form', 'Tenant\Website\EditorialController::form/$1');
+});
+$routes->group('tenant/website/editorial', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.create|website.content.edit',
+], static function ($routes) {
+    $routes->post('(:segment)/draft', 'Tenant\Website\EditorialController::saveDraft/$1');
+    $routes->post('(:segment)/(:num)/draft', 'Tenant\Website\EditorialController::moveToDraft/$1/$2');
+});
+$routes->group('tenant/website/editorial', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.publish',
+], static function ($routes) {
+    $routes->post('(:segment)/(:num)/schedule', 'Tenant\Website\EditorialController::schedule/$1/$2');
+    $routes->post('(:segment)/(:num)/publish', 'Tenant\Website\EditorialController::publish/$1/$2');
+});
+$routes->post('tenant/website/editorial/(:segment)/(:num)/archive', 'Tenant\Website\EditorialController::archive/$1/$2', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.archive',
+]);
+$routes->post('tenant/website/editorial/(:segment)/(:num)/delete', 'Tenant\Website\EditorialController::delete/$1/$2', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.delete',
+]);

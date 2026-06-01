@@ -35,6 +35,20 @@ class PublicWebsiteCache
         cache()->delete($this->key($key));
     }
 
+    /**
+     * Advances a tenant-scoped cache generation. Versioned keys make every
+     * paginated editorial cache entry unreachable after one lifecycle change.
+     */
+    public function bump(string $key): int
+    {
+        $cache = cache();
+        $tenantKey = $this->key($key);
+        $value = (int) ($cache->get($tenantKey) ?? 0) + 1;
+        $cache->save($tenantKey, $value, 86400);
+
+        return $value;
+    }
+
     public function key(string $key): string
     {
         $context = service('tenantContextManager')->current();

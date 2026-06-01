@@ -15,7 +15,7 @@ class PublicWebsiteService
     {
         $settings = service('websiteSettings')->publicSettings();
 
-        return [
+        $data = [
             'settings' => $settings,
             'theme' => service('themeResolver')->tenantTheme(),
             'menuItems' => service('websiteMenu')->publicItems(),
@@ -24,5 +24,13 @@ class PublicWebsiteService
             'metaDescription' => $settings['seo_description'] ?? $settings['about_summary'] ?? '',
             'canonicalUrl' => service('publicWebsiteUrl')->canonical($routeName, $routeParameters),
         ];
+
+        if ($routeName === 'home') {
+            // Homepage aggregation is optional and tenant-scoped. Empty sections
+            // are omitted by the view instead of rendering filler content.
+            $data['editorial'] = service('publicEditorial')->homepage();
+        }
+
+        return $data;
     }
 }

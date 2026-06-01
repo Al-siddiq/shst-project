@@ -29,4 +29,5 @@
         <a class="text-link" href="<?= esc(public_site_url('about')) ?>">Read more about us →</a>
     </div>
 </section>
+<?= view('public_site/_homepage_editorial', ['editorial' => $editorial]) ?>
 <?= $this->endSection() ?>

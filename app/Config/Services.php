@@ -10,8 +10,10 @@ use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
 use App\Services\Website\MediaService;
+use App\Services\Website\EditorialManagementService;
 use App\Services\Website\PublicTenantGuard;
 use App\Services\Website\PublicShowcaseService;
+use App\Services\Website\PublicEditorialService;
 use App\Services\Website\PublicWebsiteCache;
 use App\Services\Website\PublicWebsiteService;
 use App\Services\Website\PublicWebsiteUrlGenerator;
@@ -159,6 +161,26 @@ class Services extends BaseService
         }
 
         return new PublicWebsiteService();
+    }
+
+    /** Resolves published and due-scheduled editorial content for visitors. */
+    public static function publicEditorial(bool $getShared = true): PublicEditorialService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('publicEditorial');
+        }
+
+        return new PublicEditorialService();
+    }
+
+    /** Owns editorial drafts, lifecycle commands, audits, and cache invalidation. */
+    public static function editorialManagement(bool $getShared = true): EditorialManagementService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('editorialManagement');
+        }
+
+        return new EditorialManagementService();
     }
 
     /** Resolves published academic showcase records for anonymous visitors. */
