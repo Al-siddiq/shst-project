@@ -16,6 +16,7 @@ $routes->group('', ['filter' => 'tenantContext,publicTenant'], static function (
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('apply', 'PublicSite\ApplicantStartController::index');
     $routes->get('news', 'PublicSite\ContentController::index/news');
     $routes->get('news/(:segment)', 'PublicSite\ContentController::show/news/$1');
     $routes->get('announcements', 'PublicSite\ContentController::index/announcements');
@@ -38,6 +39,7 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('apply', 'PublicSite\ApplicantStartController::index');
     $routes->get('news', 'PublicSite\ContentController::index/news');
     $routes->get('news/(:segment)', 'PublicSite\ContentController::show/news/$1');
     $routes->get('announcements', 'PublicSite\ContentController::index/announcements');
@@ -50,9 +52,19 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
 });
 
 $routes->group('auth', static function ($routes) {
-    $routes->get('login', 'AuthController::login');
+    // Shield owns registration, login, logout, verification, and recovery.
+    service('auth')->routes($routes);
     $routes->get('identifier/(:segment)', 'AuthController::identifierPolicy/$1');
 });
+
+// Private applicant documents are never public media. The controller repeats
+// ownership-or-reviewer authorization after these coarse HTTP boundaries.
+$routes->get('applicant/documents/(:segment)', 'Applicant\DocumentController::download/$1', [
+    'filter' => 'protectedAuth,tenantContext:required',
+]);
+$routes->get('applicant/readiness', 'Applicant\DashboardController::readiness', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
 
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.

@@ -27,6 +27,7 @@ class PublicWebsiteUrlGenerator
         'programmes' => 'programmes',
         'programme' => 'programmes',
         'admissions' => 'admissions',
+        'apply' => 'apply',
         'news' => 'news',
         'news_item' => 'news',
         'announcements' => 'announcements',

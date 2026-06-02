@@ -3,6 +3,11 @@
 namespace Config;
 
 use App\Services\AuditLogger;
+use App\Services\Admissions\AdmissionAuthorityProvisioner;
+use App\Services\Admissions\AdmissionReferenceGenerator;
+use App\Services\Admissions\ApplicantAccessPolicy;
+use App\Services\Admissions\ApplicantDocumentStorage;
+use App\Services\Admissions\ApplicantIdentityNormalizer;
 use App\Services\LayoutResolver;
 use App\Services\NavigationResolver;
 use App\Services\ThemeResolver;
@@ -262,5 +267,55 @@ class Services extends BaseService
         }
 
         return new WebsiteAuthorityProvisioner();
+    }
+
+    /** Provisions the stable Block 3 authority catalogue into one tenant. */
+    public static function admissionAuthorityProvisioner(bool $getShared = true): AdmissionAuthorityProvisioner
+    {
+        if ($getShared) {
+            return static::getSharedInstance('admissionAuthorityProvisioner');
+        }
+
+        return new AdmissionAuthorityProvisioner();
+    }
+
+    /** Normalizes email and Nigerian mobile identifiers before Shield lookup. */
+    public static function applicantIdentityNormalizer(bool $getShared = true): ApplicantIdentityNormalizer
+    {
+        if ($getShared) {
+            return static::getSharedInstance('applicantIdentityNormalizer');
+        }
+
+        return new ApplicantIdentityNormalizer();
+    }
+
+    /** Enforces applicant profile and private-document ownership. */
+    public static function applicantAccessPolicy(bool $getShared = true): ApplicantAccessPolicy
+    {
+        if ($getShared) {
+            return static::getSharedInstance('applicantAccessPolicy');
+        }
+
+        return new ApplicantAccessPolicy();
+    }
+
+    /** Resolves private applicant files beneath the admission storage root. */
+    public static function applicantDocumentStorage(bool $getShared = true): ApplicantDocumentStorage
+    {
+        if ($getShared) {
+            return static::getSharedInstance('applicantDocumentStorage');
+        }
+
+        return new ApplicantDocumentStorage();
+    }
+
+    /** Allocates tenant-aware application reference skeleton values. */
+    public static function admissionReferenceGenerator(bool $getShared = true): AdmissionReferenceGenerator
+    {
+        if ($getShared) {
+            return static::getSharedInstance('admissionReferenceGenerator');
+        }
+
+        return new AdmissionReferenceGenerator();
     }
 }
