@@ -4,6 +4,9 @@ namespace Config;
 
 use App\Services\AuditLogger;
 use App\Services\Admissions\AdmissionAuthorityProvisioner;
+use App\Services\Admissions\AdmissionConfigurationService;
+use App\Services\Admissions\AdmissionDashboardService;
+use App\Services\Admissions\PublicAdmissionService;
 use App\Services\Admissions\AdmissionReferenceGenerator;
 use App\Services\Admissions\ApplicantAccessPolicy;
 use App\Services\Admissions\ApplicantDocumentStorage;
@@ -318,4 +321,25 @@ class Services extends BaseService
 
         return new AdmissionReferenceGenerator();
     }
+    /** Owns tenant-safe Phase 1 admission setup mutations. */
+    public static function admissionConfiguration(bool $getShared = true): AdmissionConfigurationService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionConfiguration'); }
+        return new AdmissionConfigurationService();
+    }
+
+    /** Exposes sanitized active-cycle and open-programme public discovery. */
+    public static function publicAdmissions(bool $getShared = true): PublicAdmissionService
+    {
+        if ($getShared) { return static::getSharedInstance('publicAdmissions'); }
+        return new PublicAdmissionService();
+    }
+
+    /** Builds tenant-scoped admission setup gaps for the staff dashboard. */
+    public static function admissionDashboard(bool $getShared = true): AdmissionDashboardService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionDashboard'); }
+        return new AdmissionDashboardService();
+    }
+
 }
