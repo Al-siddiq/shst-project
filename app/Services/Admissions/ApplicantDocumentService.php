@@ -18,9 +18,7 @@ class ApplicantDocumentService
         if ($application === null) {
             throw new InvalidArgumentException('Application was not found for this applicant.');
         }
-        if ($application['status'] !== 'draft') {
-            throw new InvalidArgumentException('Submitted applications cannot receive replacement documents.');
-        }
+        service('admissionCorrectionWindow')->assertApplicantMayEdit($application);
 
         $documentType = trim($documentType);
         $requirement = $this->requirementFor($application, $documentType);

@@ -68,9 +68,7 @@ class ApplicationDraftService
         if ($application === null) {
             throw new InvalidArgumentException('Draft application was not found for this applicant.');
         }
-        if ($application['status'] !== 'draft') {
-            throw new InvalidArgumentException('Only draft applications may be edited in Phase 2.');
-        }
+        service('admissionCorrectionWindow')->assertApplicantMayEdit($application);
         foreach (['phone_e164', 'next_of_kin_phone_e164', 'guardian_phone_e164'] as $field) {
             if (! empty($payload[$field])) {
                 $payload[$field] = service('applicantIdentityNormalizer')->normalizeNigerianPhone((string) $payload[$field]);

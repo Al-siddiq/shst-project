@@ -104,6 +104,26 @@ $routes->post('applicant/applications/(:segment)/submit', 'Applicant\Application
     'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
 ]);
 
+
+// Phase 4 admissions review workspace. Route filters establish coarse tenant
+// and authority boundaries; AdmissionReviewService repeats all sensitive checks.
+$routes->group('tenant/admissions/applications', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.applications.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\ApplicationReviewController::index');
+    $routes->get('audit', 'Tenant\Admissions\ApplicationReviewController::audit', ['filter' => 'tenantAccess:authority:admissions.audit.view']);
+    $routes->get('(:num)', 'Tenant\Admissions\ApplicationReviewController::show/$1');
+});
+$routes->post('tenant/admissions/applications/(:num)/review', 'Tenant\Admissions\ApplicationReviewController::review/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.applications.review',
+]);
+$routes->post('tenant/admissions/documents/(:num)/review', 'Tenant\Admissions\ApplicationReviewController::reviewDocument/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.documents.review',
+]);
+$routes->post('tenant/admissions/applications/(:num)/screening', 'Tenant\Admissions\ApplicationReviewController::screening/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.screening.manage',
+]);
+
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.
     $routes->get('tenants', 'Platform\\TenantController::index');

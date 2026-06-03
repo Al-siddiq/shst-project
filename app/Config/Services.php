@@ -5,9 +5,11 @@ namespace Config;
 use App\Services\AuditLogger;
 use App\Services\Admissions\AdmissionAuthorityProvisioner;
 use App\Services\Admissions\AdmissionConfigurationService;
+use App\Services\Admissions\AdmissionCorrectionWindowService;
 use App\Services\Admissions\AdmissionDashboardService;
 use App\Services\Admissions\PublicAdmissionService;
 use App\Services\Admissions\AdmissionReferenceGenerator;
+use App\Services\Admissions\AdmissionReviewService;
 use App\Services\Admissions\ApplicantAccessPolicy;
 use App\Services\Admissions\ApplicantAuthRedirectService;
 use App\Services\Admissions\ApplicantProfileService;
@@ -369,6 +371,20 @@ class Services extends BaseService
     {
         if ($getShared) { return static::getSharedInstance('applicantAuthRedirect'); }
         return new ApplicantAuthRedirectService();
+    }
+
+    /** Validates temporary applicant correction access granted by reviewers. */
+    public static function admissionCorrectionWindow(bool $getShared = true): AdmissionCorrectionWindowService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionCorrectionWindow'); }
+        return new AdmissionCorrectionWindowService();
+    }
+
+    /** Owns Phase 4 staff review queue, document review, and screening actions. */
+    public static function admissionReview(bool $getShared = true): AdmissionReviewService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionReview'); }
+        return new AdmissionReviewService();
     }
 
     /** Owns applicant O'Level sittings and subject-grade rows. */

@@ -30,9 +30,7 @@ class OlevelApplicationService
         if ($application === null) {
             throw new InvalidArgumentException('Application was not found for this applicant.');
         }
-        if ($application['status'] !== 'draft') {
-            throw new InvalidArgumentException('Submitted applications cannot be edited.');
-        }
+        service('admissionCorrectionWindow')->assertApplicantMayEdit($application);
 
         $examType = strtoupper(trim((string) ($payload['exam_type_code'] ?? '')));
         $year = (int) ($payload['exam_year'] ?? 0);
