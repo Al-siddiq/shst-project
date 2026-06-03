@@ -1,3 +1,3 @@
 import { defineConfig } from 'vite';
-/** Builds the optional CMS Vue island without turning public pages into an SPA. */
-export default defineConfig({build:{lib:{entry:'resources/js/website-menu-manager.js',formats:['es'],fileName:()=> 'website-menu-manager.js'},outDir:'public/assets/js',emptyOutDir:false}});
+/** Builds optional Vue islands without turning public pages into an SPA. */
+export default defineConfig({build:{rollupOptions:{input:{'website-menu-manager':'resources/js/website-menu-manager.js','applicant-draft':'resources/js/applicant-draft.js','applicant-olevel':'resources/js/applicant-olevel.js'},output:{entryFileNames:'[name].js'}},outDir:'public/assets/js',emptyOutDir:false}});

@@ -16,6 +16,9 @@ $routes->group('', ['filter' => 'tenantContext,publicTenant'], static function (
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('admissions/programmes', 'PublicSite\AdmissionProgrammeController::index');
+    $routes->get('admissions/programmes/(:num)', 'PublicSite\AdmissionProgrammeController::show/$1');
+    $routes->get('apply', 'PublicSite\ApplicantStartController::index');
     $routes->get('news', 'PublicSite\ContentController::index/news');
     $routes->get('news/(:segment)', 'PublicSite\ContentController::show/news/$1');
     $routes->get('announcements', 'PublicSite\ContentController::index/announcements');
@@ -38,6 +41,9 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('admissions/programmes', 'PublicSite\AdmissionProgrammeController::index');
+    $routes->get('admissions/programmes/(:num)', 'PublicSite\AdmissionProgrammeController::show/$1');
+    $routes->get('apply', 'PublicSite\ApplicantStartController::index');
     $routes->get('news', 'PublicSite\ContentController::index/news');
     $routes->get('news/(:segment)', 'PublicSite\ContentController::show/news/$1');
     $routes->get('announcements', 'PublicSite\ContentController::index/announcements');
@@ -50,9 +56,53 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
 });
 
 $routes->group('auth', static function ($routes) {
-    $routes->get('login', 'AuthController::login');
+    // Shield owns registration, login, logout, verification, and recovery.
+    service('auth')->routes($routes);
     $routes->get('identifier/(:segment)', 'AuthController::identifierPolicy/$1');
 });
+
+// Private applicant documents are never public media. The controller repeats
+// ownership-or-reviewer authorization after these coarse HTTP boundaries.
+$routes->get('applicant/documents/(:segment)', 'Applicant\DocumentController::download/$1', [
+    'filter' => 'protectedAuth,tenantContext:required',
+]);
+$routes->get('applicant/readiness', 'Applicant\DashboardController::readiness', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+
+// Phase 2 applicant access routes are protected by Shield and tenant context.
+// Profile creation is allowed before applicantAccess; draft routes require an
+// existing owned applicant profile and the services repeat ownership checks.
+$routes->get('applicant/profile', 'Applicant\ProfileController::edit', [
+    'filter' => 'protectedAuth,tenantContext:required',
+]);
+$routes->post('applicant/profile', 'Applicant\ProfileController::save', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required',
+]);
+$routes->get('applicant', 'Applicant\DashboardController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/applications', 'Applicant\ApplicationController::start', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->get('applicant/applications/(:segment)', 'Applicant\ApplicationController::show/$1', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->match(['post', 'put'], 'applicant/applications/(:segment)/biodata', 'Applicant\ApplicationController::saveBiodata/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->match(['post', 'put'], 'applicant/applications/(:segment)/olevel', 'Applicant\ApplicationController::saveOlevel/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/applications/(:segment)/documents', 'Applicant\DocumentController::upload/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->get('applicant/applications/(:segment)/preview', 'Applicant\ApplicationController::preview/$1', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/applications/(:segment)/submit', 'Applicant\ApplicationController::submit/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
 
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.
@@ -211,3 +261,25 @@ $routes->group('tenant/website/menu', ['filter' => 'csrf,protectedAuth,tenantCon
 $routes->get('tenant/website/audit', 'Tenant\Website\AuditController::index', [
     'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:website.audit.view',
 ]);
+
+
+// Phase 1 admissions configuration routes remain narrow by authority. Services
+// repeat decisive checks and related-record tenant validation for non-HTTP use.
+$routes->get('tenant/admissions', 'Tenant\Admissions\DashboardController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.dashboard.view',
+]);
+$routes->group('tenant/admissions/cycles', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.cycles.manage'], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\CycleController::index');
+    $routes->post('/', 'Tenant\Admissions\CycleController::save');
+    $routes->post('(:num)/transition/(:segment)', 'Tenant\Admissions\CycleController::transition/$1/$2');
+});
+$routes->group('tenant/admissions/programmes', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.programmes.manage'], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\ProgrammeOpeningController::index');
+    $routes->post('/', 'Tenant\Admissions\ProgrammeOpeningController::save');
+});
+$routes->group('tenant/admissions/requirements', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.requirements.manage'], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\RequirementController::index');
+    $routes->post('definitions', 'Tenant\Admissions\RequirementController::saveDefinition');
+    $routes->post('subjects', 'Tenant\Admissions\RequirementController::saveSubject');
+    $routes->post('documents', 'Tenant\Admissions\RequirementController::saveDocument');
+});

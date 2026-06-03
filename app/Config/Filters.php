@@ -38,6 +38,7 @@ class Filters extends BaseFilters
         'tenantContext' => \App\Filters\TenantContextFilter::class,
         'tenantAccess'  => \App\Filters\TenantAccessFilter::class,
         'publicTenant'  => \App\Filters\PublicTenantFilter::class,
+        'applicantAccess' => \App\Filters\ApplicantAccessFilter::class,
     ];
 
     /**
