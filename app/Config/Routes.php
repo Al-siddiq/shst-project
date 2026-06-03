@@ -91,6 +91,18 @@ $routes->get('applicant/applications/(:segment)', 'Applicant\ApplicationControll
 $routes->match(['post', 'put'], 'applicant/applications/(:segment)/biodata', 'Applicant\ApplicationController::saveBiodata/$1', [
     'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
 ]);
+$routes->match(['post', 'put'], 'applicant/applications/(:segment)/olevel', 'Applicant\ApplicationController::saveOlevel/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/applications/(:segment)/documents', 'Applicant\DocumentController::upload/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->get('applicant/applications/(:segment)/preview', 'Applicant\ApplicationController::preview/$1', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/applications/(:segment)/submit', 'Applicant\ApplicationController::submit/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
 
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.

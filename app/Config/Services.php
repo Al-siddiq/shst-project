@@ -14,6 +14,11 @@ use App\Services\Admissions\ApplicantProfileService;
 use App\Services\Admissions\ApplicationDraftService;
 use App\Services\Admissions\ApplicantDocumentStorage;
 use App\Services\Admissions\ApplicantIdentityNormalizer;
+use App\Services\Admissions\AdmissionNotificationDispatcher;
+use App\Services\Admissions\ApplicantDocumentService;
+use App\Services\Admissions\ApplicationCompletionService;
+use App\Services\Admissions\ApplicationSubmissionService;
+use App\Services\Admissions\OlevelApplicationService;
 use App\Services\LayoutResolver;
 use App\Services\NavigationResolver;
 use App\Services\ThemeResolver;
@@ -364,6 +369,41 @@ class Services extends BaseService
     {
         if ($getShared) { return static::getSharedInstance('applicantAuthRedirect'); }
         return new ApplicantAuthRedirectService();
+    }
+
+    /** Owns applicant O'Level sittings and subject-grade rows. */
+    public static function olevelApplication(bool $getShared = true): OlevelApplicationService
+    {
+        if ($getShared) { return static::getSharedInstance('olevelApplication'); }
+        return new OlevelApplicationService();
+    }
+
+    /** Owns private applicant document upload and replacement metadata. */
+    public static function applicantDocument(bool $getShared = true): ApplicantDocumentService
+    {
+        if ($getShared) { return static::getSharedInstance('applicantDocument'); }
+        return new ApplicantDocumentService();
+    }
+
+    /** Evaluates draft completion before preview or final submission. */
+    public static function applicationCompletion(bool $getShared = true): ApplicationCompletionService
+    {
+        if ($getShared) { return static::getSharedInstance('applicationCompletion'); }
+        return new ApplicationCompletionService();
+    }
+
+    /** Performs idempotent Phase 3 application preview and final submission. */
+    public static function applicationSubmission(bool $getShared = true): ApplicationSubmissionService
+    {
+        if ($getShared) { return static::getSharedInstance('applicationSubmission'); }
+        return new ApplicationSubmissionService();
+    }
+
+    /** Queues admission notification intent without implementing delivery. */
+    public static function admissionNotificationDispatcher(bool $getShared = true): AdmissionNotificationDispatcher
+    {
+        if ($getShared) { return static::getSharedInstance('admissionNotificationDispatcher'); }
+        return new AdmissionNotificationDispatcher();
     }
 
 }

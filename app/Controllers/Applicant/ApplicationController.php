@@ -6,7 +6,7 @@ use App\Controllers\BaseController;
 use App\Traits\ApiResponseTrait;
 use InvalidArgumentException;
 
-/** Starts, resumes, and autosaves Phase 2 draft applications only. */
+/** Starts, resumes, autosaves, previews, and submits applicant applications. */
 class ApplicationController extends BaseController
 {
     use ApiResponseTrait;
@@ -29,7 +29,8 @@ class ApplicationController extends BaseController
 
     public function show(string $token): string
     {
-        return view('applicant/application', array_merge(service('publicWebsite')->page('apply', 'Draft application'), ['application' => service('applicationDraft')->resume($token)]));
+        $application = service('applicationDraft')->resume($token);
+        return view('applicant/application', array_merge(service('publicWebsite')->page('apply', 'Draft application'), ['application' => $application, 'olevel' => service('olevelApplication')->forApplication((int) $application['id']), 'documents' => service('applicantDocument')->documentsForApplication((int) $application['id']), 'completion' => service('applicationCompletion')->evaluate($application)]));
     }
 
     public function saveBiodata(string $token)
@@ -46,6 +47,33 @@ class ApplicationController extends BaseController
         }
 
         return $this->wantsJson() ? $this->ok('Biodata draft saved.', ['completion_percent' => $draft['biodata']['completion_percent'] ?? 0]) : redirect()->back()->with('message', 'Biodata draft saved.');
+    }
+
+    public function saveOlevel(string $token)
+    {
+        try {
+            $olevel = service('olevelApplication')->save($token, $this->payload());
+        } catch (InvalidArgumentException $exception) {
+            return $this->failure(['olevel' => $exception->getMessage()]);
+        }
+
+        return $this->wantsJson() ? $this->ok("O'Level results saved.", $olevel) : redirect()->back()->with('message', "O'Level results saved.");
+    }
+
+    public function preview(string $token): string
+    {
+        return view('applicant/preview', array_merge(service('publicWebsite')->page('apply', 'Application preview'), service('applicationSubmission')->preview($token)));
+    }
+
+    public function submit(string $token)
+    {
+        try {
+            $result = service('applicationSubmission')->submit($token);
+        } catch (InvalidArgumentException $exception) {
+            return $this->failure(['submission' => $exception->getMessage()]);
+        }
+
+        return $this->wantsJson() ? $this->ok('Application submitted.', $result) : redirect()->to(site_url('applicant/applications/' . $token . '/preview'))->with('message', 'Application submitted. Reference: ' . $result['application_number']);
     }
 
     /** @return array<string, mixed> */ private function payload(): array { return $this->wantsJson() ? ($this->request->getJSON(true) ?? []) : $this->request->getPost(); }

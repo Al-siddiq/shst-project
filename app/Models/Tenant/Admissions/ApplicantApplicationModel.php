@@ -12,7 +12,7 @@ class ApplicantApplicationModel extends TenantScopedModel
     protected $returnType = 'array';
     protected $useSoftDeletes = true;
     protected $useTimestamps = true;
-    protected $allowedFields = ['tenant_id', 'applicant_profile_id', 'admission_cycle_id', 'programme_opening_id', 'public_token', 'status', 'biodata_status', 'started_at', 'last_saved_at', 'created_by', 'updated_by'];
+    protected $allowedFields = ['tenant_id', 'applicant_profile_id', 'admission_cycle_id', 'programme_opening_id', 'public_token', 'application_number', 'status', 'biodata_status', 'started_at', 'last_saved_at', 'submitted_at', 'submission_snapshot_id', 'created_by', 'updated_by'];
     protected $beforeInsert = ['applyTenantInsertMetadata'];
     protected $beforeUpdate = ['applyTenantUpdateMetadata'];
 }
