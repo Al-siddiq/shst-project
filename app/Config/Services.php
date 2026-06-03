@@ -9,6 +9,9 @@ use App\Services\Admissions\AdmissionDashboardService;
 use App\Services\Admissions\PublicAdmissionService;
 use App\Services\Admissions\AdmissionReferenceGenerator;
 use App\Services\Admissions\ApplicantAccessPolicy;
+use App\Services\Admissions\ApplicantAuthRedirectService;
+use App\Services\Admissions\ApplicantProfileService;
+use App\Services\Admissions\ApplicationDraftService;
 use App\Services\Admissions\ApplicantDocumentStorage;
 use App\Services\Admissions\ApplicantIdentityNormalizer;
 use App\Services\LayoutResolver;
@@ -340,6 +343,27 @@ class Services extends BaseService
     {
         if ($getShared) { return static::getSharedInstance('admissionDashboard'); }
         return new AdmissionDashboardService();
+    }
+
+    /** Creates or updates the tenant applicant profile owned by the Shield user. */
+    public static function applicantProfile(bool $getShared = true): ApplicantProfileService
+    {
+        if ($getShared) { return static::getSharedInstance('applicantProfile'); }
+        return new ApplicantProfileService();
+    }
+
+    /** Owns Phase 2 draft start, resume, and biodata autosave. */
+    public static function applicationDraft(bool $getShared = true): ApplicationDraftService
+    {
+        if ($getShared) { return static::getSharedInstance('applicationDraft'); }
+        return new ApplicationDraftService();
+    }
+
+    /** Centralizes tenant-aware Shield redirect links for applicant surfaces. */
+    public static function applicantAuthRedirect(bool $getShared = true): ApplicantAuthRedirectService
+    {
+        if ($getShared) { return static::getSharedInstance('applicantAuthRedirect'); }
+        return new ApplicantAuthRedirectService();
     }
 
 }

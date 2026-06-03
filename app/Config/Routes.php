@@ -70,6 +70,28 @@ $routes->get('applicant/readiness', 'Applicant\DashboardController::readiness', 
     'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
 ]);
 
+// Phase 2 applicant access routes are protected by Shield and tenant context.
+// Profile creation is allowed before applicantAccess; draft routes require an
+// existing owned applicant profile and the services repeat ownership checks.
+$routes->get('applicant/profile', 'Applicant\ProfileController::edit', [
+    'filter' => 'protectedAuth,tenantContext:required',
+]);
+$routes->post('applicant/profile', 'Applicant\ProfileController::save', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required',
+]);
+$routes->get('applicant', 'Applicant\DashboardController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/applications', 'Applicant\ApplicationController::start', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->get('applicant/applications/(:segment)', 'Applicant\ApplicationController::show/$1', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->match(['post', 'put'], 'applicant/applications/(:segment)/biodata', 'Applicant\ApplicationController::saveBiodata/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.
     $routes->get('tenants', 'Platform\\TenantController::index');

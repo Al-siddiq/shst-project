@@ -1,0 +1,4 @@
+<?= $this->extend('layouts/public') ?><?= $this->section('content') ?>
+<section class="page-header"><div class="container narrow"><p class="eyebrow">Applicant access</p><h1>Confirm your applicant profile</h1><p class="lead">Use the email address or Nigerian mobile number you will use for admission updates.</p></div></section>
+<section class="section"><div class="container narrow content-stack"><?php if (session('errors')): ?><ul><?php foreach(session('errors') as $error): ?><li><?= esc($error) ?></li><?php endforeach ?></ul><?php endif ?><form method="post" action="<?= site_url('applicant/profile') ?>"><?= csrf_field() ?><label>Email or Nigerian phone number <input name="identifier" value="<?= esc(old('identifier', $profile['email'] ?? $profile['phone_e164'] ?? '')) ?>" required inputmode="email"></label><button>Save applicant profile</button></form></div></section>
+<?= $this->endSection() ?>

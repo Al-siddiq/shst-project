@@ -17,6 +17,8 @@ class ApplicantStartController extends BaseController
     public function index(): string
     {
         $data = service('publicWebsite')->page('apply', 'Apply');
+        $data['openProgrammes'] = service('publicAdmissions')->openProgrammes();
+        $data['authLinks'] = service('applicantAuthRedirect')->links();
 
         return view('public_site/apply', $data);
     }
