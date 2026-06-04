@@ -9,6 +9,9 @@ use App\Models\Tenant\Admissions\AdmissionRequirementDefinitionModel;
 use App\Models\Tenant\Admissions\AdmissionSubjectRequirementModel;
 use App\Models\Tenant\Admissions\ApplicantApplicationModel;
 use App\Models\Tenant\Admissions\AdmissionListPublicationModel;
+use App\Models\Tenant\Admissions\AdmissionOfferAcceptanceModel;
+use App\Models\Tenant\Admissions\AdmissionClearanceStatusModel;
+use App\Models\Tenant\Admissions\AdmissionConversionEligibilityMarkerModel;
 
 /** Builds Phase 1 admission setup metrics; application counts arrive later. */
 class AdmissionDashboardService
@@ -49,6 +52,9 @@ class AdmissionDashboardService
             'screenedApplicationCount' => (new ApplicantApplicationModel())->where('status', 'screened')->countAllResults(),
             'offeredApplicationCount' => (new ApplicantApplicationModel())->where('status', 'offered')->countAllResults(),
             'publishedListCount' => (new AdmissionListPublicationModel())->where('status', 'published')->countAllResults(),
+            'acceptedOfferCount' => (new AdmissionOfferAcceptanceModel())->where('acceptance_status', 'accepted')->countAllResults(),
+            'clearedApplicantCount' => (new AdmissionClearanceStatusModel())->where('clearance_status', 'cleared')->countAllResults(),
+            'conversionEligibleCount' => (new AdmissionConversionEligibilityMarkerModel())->countAllResults(),
             'setupGaps' => $gaps,
         ];
     }

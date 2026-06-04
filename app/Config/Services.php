@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Services\AuditLogger;
+use App\Services\Admissions\AdmissionAcceptanceService;
 use App\Services\Admissions\AdmissionAuthorityProvisioner;
 use App\Services\Admissions\AdmissionConfigurationService;
 use App\Services\Admissions\AdmissionCorrectionWindowService;
@@ -380,6 +381,13 @@ class Services extends BaseService
     {
         if ($getShared) { return static::getSharedInstance('admissionCorrectionWindow'); }
         return new AdmissionCorrectionWindowService();
+    }
+
+    /** Owns Phase 7 offer acceptance, clearance placeholder, and handoff marker. */
+    public static function admissionAcceptance(bool $getShared = true): AdmissionAcceptanceService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionAcceptance'); }
+        return new AdmissionAcceptanceService();
     }
 
     /** Owns Phase 6 admission-list drafts, publication, and public reads. */

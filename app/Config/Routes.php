@@ -110,6 +110,12 @@ $routes->post('applicant/applications/(:segment)/submit', 'Applicant\Application
 $routes->get('applicant/offers', 'Applicant\OfferController::index', [
     'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
 ]);
+$routes->post('applicant/offers/accept', 'Applicant\OfferController::accept', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/offers/decline', 'Applicant\OfferController::decline', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
 
 
 // Phase 4 admissions review workspace. Route filters establish coarse tenant
@@ -155,6 +161,17 @@ $routes->group('tenant/admissions/lists', [
     $routes->post('/', 'Tenant\Admissions\ListPublicationController::create', ['filter' => 'csrf']);
     $routes->post('(:num)/entries', 'Tenant\Admissions\ListPublicationController::addEntry/$1', ['filter' => 'csrf']);
     $routes->post('(:num)/publish', 'Tenant\Admissions\ListPublicationController::publish/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.lists.publish']);
+});
+
+
+// Phase 7 acceptance and clearance tracker. This creates only a Block 5
+// handoff marker and never creates student records inside Block 3.
+$routes->group('tenant/admissions/acceptance', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.acceptance.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\AcceptanceController::index');
+    $routes->post('applications/(:num)/clearance', 'Tenant\Admissions\AcceptanceController::clearance/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.clearance.manage']);
+    $routes->post('applications/(:num)/eligibility', 'Tenant\Admissions\AcceptanceController::eligibility/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.clearance.manage']);
 });
 
 $routes->group('platform', static function ($routes) {
