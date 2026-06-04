@@ -19,6 +19,7 @@ class DashboardController extends BaseController
             'profile' => $profile,
             'drafts' => service('applicationDraft')->draftsForCurrentApplicant(),
             'openProgrammes' => service('publicAdmissions')->openProgrammes(),
+            'activeOffer' => service('admissionDecision')->currentOfferForApplicant(),
         ]));
     }
 

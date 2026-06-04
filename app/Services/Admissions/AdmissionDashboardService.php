@@ -46,6 +46,7 @@ class AdmissionDashboardService
             'submittedApplicationCount' => (new ApplicantApplicationModel())->where('status', 'submitted')->countAllResults(),
             'reviewQueueCount' => (new ApplicantApplicationModel())->whereIn('status', ['submitted', 'under_review', 'correction_requested', 'reviewed', 'screening_pending', 'screened'])->countAllResults(),
             'screenedApplicationCount' => (new ApplicantApplicationModel())->where('status', 'screened')->countAllResults(),
+            'offeredApplicationCount' => (new ApplicantApplicationModel())->where('status', 'offered')->countAllResults(),
             'setupGaps' => $gaps,
         ];
     }

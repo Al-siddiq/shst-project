@@ -103,6 +103,9 @@ $routes->get('applicant/applications/(:segment)/preview', 'Applicant\Application
 $routes->post('applicant/applications/(:segment)/submit', 'Applicant\ApplicationController::submit/$1', [
     'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
 ]);
+$routes->get('applicant/offers', 'Applicant\OfferController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
 
 
 // Phase 4 admissions review workspace. Route filters establish coarse tenant
@@ -123,6 +126,19 @@ $routes->post('tenant/admissions/documents/(:num)/review', 'Tenant\Admissions\Ap
 $routes->post('tenant/admissions/applications/(:num)/screening', 'Tenant\Admissions\ApplicationReviewController::screening/$1', [
     'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.screening.manage',
 ]);
+
+
+// Phase 5 decision workspace. Publication, acceptance, and clearance remain
+// intentionally outside this phase and are not routed here.
+$routes->group('tenant/admissions/decisions', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.decisions.manage',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\DecisionController::index');
+    $routes->post('batches', 'Tenant\Admissions\DecisionController::createBatch', ['filter' => 'csrf,tenantAccess:authority:admissions.shortlist.manage']);
+    $routes->post('batches/(:num)/applications/(:num)', 'Tenant\Admissions\DecisionController::addToBatch/$1/$2', ['filter' => 'csrf,tenantAccess:authority:admissions.shortlist.manage']);
+    $routes->post('applications/(:num)', 'Tenant\Admissions\DecisionController::decide/$1', ['filter' => 'csrf']);
+    $routes->post('(:num)/approve', 'Tenant\Admissions\DecisionController::approve/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.decisions.approve']);
+});
 
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.

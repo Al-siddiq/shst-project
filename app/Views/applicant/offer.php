@@ -1,0 +1,4 @@
+<?= $this->extend('layouts/public') ?><?= $this->section('content') ?>
+<section class="page-header"><div class="container narrow"><p class="eyebrow">Admission offer</p><h1>Your admission offer</h1><p class="lead">Acceptance and decline actions will be enabled in the acceptance phase.</p></div></section>
+<section class="section"><div class="container narrow content-stack"><p><strong>Offer reference:</strong> <?= esc($offer['offer_reference']) ?></p><p><strong>Status:</strong> <?= esc($offer['offer_status']) ?></p><p><strong>Issued:</strong> <?= esc($offer['issued_at']) ?></p><p><strong>Expires:</strong> <?= esc($offer['expires_at']) ?></p><h2>Offer letter preview</h2><p>Template: <?= esc($offer['offer_letter_template_key'] ?? 'default') ?></p><p>This page is visible only to the applicant who owns the offered application.</p></div></section>
+<?= $this->endSection() ?>
