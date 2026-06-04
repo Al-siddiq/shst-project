@@ -16,6 +16,8 @@ $routes->group('', ['filter' => 'tenantContext,publicTenant'], static function (
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('admissions/lists', 'PublicSite\AdmissionListController::index');
+    $routes->get('admissions/lists/(:segment)', 'PublicSite\AdmissionListController::show/$1');
     $routes->get('admissions/programmes', 'PublicSite\AdmissionProgrammeController::index');
     $routes->get('admissions/programmes/(:num)', 'PublicSite\AdmissionProgrammeController::show/$1');
     $routes->get('apply', 'PublicSite\ApplicantStartController::index');
@@ -41,6 +43,8 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('admissions/lists', 'PublicSite\AdmissionListController::index');
+    $routes->get('admissions/lists/(:segment)', 'PublicSite\AdmissionListController::show/$1');
     $routes->get('admissions/programmes', 'PublicSite\AdmissionProgrammeController::index');
     $routes->get('admissions/programmes/(:num)', 'PublicSite\AdmissionProgrammeController::show/$1');
     $routes->get('apply', 'PublicSite\ApplicantStartController::index');
@@ -138,6 +142,19 @@ $routes->group('tenant/admissions/decisions', [
     $routes->post('batches/(:num)/applications/(:num)', 'Tenant\Admissions\DecisionController::addToBatch/$1/$2', ['filter' => 'csrf,tenantAccess:authority:admissions.shortlist.manage']);
     $routes->post('applications/(:num)', 'Tenant\Admissions\DecisionController::decide/$1', ['filter' => 'csrf']);
     $routes->post('(:num)/approve', 'Tenant\Admissions\DecisionController::approve/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.decisions.approve']);
+});
+
+
+// Phase 6 admission-list publication workspace. Preview and publish are split
+// by authority so unpublished lists remain private until explicit publication.
+$routes->group('tenant/admissions/lists', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.lists.preview',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\ListPublicationController::index');
+    $routes->get('(:num)', 'Tenant\Admissions\ListPublicationController::show/$1');
+    $routes->post('/', 'Tenant\Admissions\ListPublicationController::create', ['filter' => 'csrf']);
+    $routes->post('(:num)/entries', 'Tenant\Admissions\ListPublicationController::addEntry/$1', ['filter' => 'csrf']);
+    $routes->post('(:num)/publish', 'Tenant\Admissions\ListPublicationController::publish/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.lists.publish']);
 });
 
 $routes->group('platform', static function ($routes) {

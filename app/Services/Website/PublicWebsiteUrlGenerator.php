@@ -27,6 +27,8 @@ class PublicWebsiteUrlGenerator
         'programmes' => 'programmes',
         'programme' => 'programmes',
         'admissions' => 'admissions',
+        'admission_lists' => 'admissions/lists',
+        'admission_list' => 'admissions/lists',
         'admission_programmes' => 'admissions/programmes',
         'admission_programme' => 'admissions/programmes',
         'apply' => 'apply',

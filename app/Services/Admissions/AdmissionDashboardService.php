@@ -8,6 +8,7 @@ use App\Models\Tenant\Admissions\AdmissionProgrammeOpeningModel;
 use App\Models\Tenant\Admissions\AdmissionRequirementDefinitionModel;
 use App\Models\Tenant\Admissions\AdmissionSubjectRequirementModel;
 use App\Models\Tenant\Admissions\ApplicantApplicationModel;
+use App\Models\Tenant\Admissions\AdmissionListPublicationModel;
 
 /** Builds Phase 1 admission setup metrics; application counts arrive later. */
 class AdmissionDashboardService
@@ -47,6 +48,7 @@ class AdmissionDashboardService
             'reviewQueueCount' => (new ApplicantApplicationModel())->whereIn('status', ['submitted', 'under_review', 'correction_requested', 'reviewed', 'screening_pending', 'screened'])->countAllResults(),
             'screenedApplicationCount' => (new ApplicantApplicationModel())->where('status', 'screened')->countAllResults(),
             'offeredApplicationCount' => (new ApplicantApplicationModel())->where('status', 'offered')->countAllResults(),
+            'publishedListCount' => (new AdmissionListPublicationModel())->where('status', 'published')->countAllResults(),
             'setupGaps' => $gaps,
         ];
     }

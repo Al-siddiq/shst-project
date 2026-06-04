@@ -7,6 +7,7 @@ use App\Services\Admissions\AdmissionAuthorityProvisioner;
 use App\Services\Admissions\AdmissionConfigurationService;
 use App\Services\Admissions\AdmissionCorrectionWindowService;
 use App\Services\Admissions\AdmissionDashboardService;
+use App\Services\Admissions\AdmissionListPublicationService;
 use App\Services\Admissions\AdmissionDecisionService;
 use App\Services\Admissions\PublicAdmissionService;
 use App\Services\Admissions\AdmissionReferenceGenerator;
@@ -379,6 +380,13 @@ class Services extends BaseService
     {
         if ($getShared) { return static::getSharedInstance('admissionCorrectionWindow'); }
         return new AdmissionCorrectionWindowService();
+    }
+
+    /** Owns Phase 6 admission-list drafts, publication, and public reads. */
+    public static function admissionListPublication(bool $getShared = true): AdmissionListPublicationService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionListPublication'); }
+        return new AdmissionListPublicationService();
     }
 
     /** Owns Phase 5 shortlisting, decisions, approval, and offer issuance. */
