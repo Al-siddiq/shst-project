@@ -12,8 +12,9 @@ use App\Models\Tenant\Admissions\AdmissionListPublicationModel;
 use App\Models\Tenant\Admissions\AdmissionOfferAcceptanceModel;
 use App\Models\Tenant\Admissions\AdmissionClearanceStatusModel;
 use App\Models\Tenant\Admissions\AdmissionConversionEligibilityMarkerModel;
+use App\Models\Tenant\Admissions\AdmissionNotificationOutboxModel;
 
-/** Builds Phase 1 admission setup metrics; application counts arrive later. */
+/** Builds finalized Block 3 admissions setup, pipeline, and operations metrics. */
 class AdmissionDashboardService
 {
     /** @return array<string, mixed> */
@@ -55,6 +56,8 @@ class AdmissionDashboardService
             'acceptedOfferCount' => (new AdmissionOfferAcceptanceModel())->where('acceptance_status', 'accepted')->countAllResults(),
             'clearedApplicantCount' => (new AdmissionClearanceStatusModel())->where('clearance_status', 'cleared')->countAllResults(),
             'conversionEligibleCount' => (new AdmissionConversionEligibilityMarkerModel())->countAllResults(),
+            'pendingOutboxCount' => (new AdmissionNotificationOutboxModel())->where('status', 'pending')->countAllResults(),
+            'failedOutboxCount' => (new AdmissionNotificationOutboxModel())->where('status', 'failed')->countAllResults(),
             'setupGaps' => $gaps,
         ];
     }

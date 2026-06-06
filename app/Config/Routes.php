@@ -174,6 +174,24 @@ $routes->group('tenant/admissions/acceptance', [
     $routes->post('applications/(:num)/eligibility', 'Tenant\Admissions\AcceptanceController::eligibility/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.clearance.manage']);
 });
 
+
+
+// Phase 8 stabilization surfaces. Reports expose safe tenant-scoped CSVs,
+// while operations only re-queues notification intents and reads tenant audit.
+$routes->group('tenant/admissions/reports', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.reports.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\ReportController::index');
+    $routes->get('export/(:segment)', 'Tenant\Admissions\ReportController::export/$1');
+});
+
+$routes->group('tenant/admissions/operations', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.audit.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\OperationsController::index');
+    $routes->post('outbox/(:num)/retry', 'Tenant\Admissions\OperationsController::retryOutbox/$1', ['filter' => 'csrf']);
+});
+
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.
     $routes->get('tenants', 'Platform\\TenantController::index');

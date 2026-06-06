@@ -9,6 +9,8 @@ use App\Services\Admissions\AdmissionConfigurationService;
 use App\Services\Admissions\AdmissionCorrectionWindowService;
 use App\Services\Admissions\AdmissionDashboardService;
 use App\Services\Admissions\AdmissionListPublicationService;
+use App\Services\Admissions\AdmissionOperationsService;
+use App\Services\Admissions\AdmissionReportService;
 use App\Services\Admissions\AdmissionDecisionService;
 use App\Services\Admissions\PublicAdmissionService;
 use App\Services\Admissions\AdmissionReferenceGenerator;
@@ -444,6 +446,20 @@ class Services extends BaseService
     {
         if ($getShared) { return static::getSharedInstance('admissionNotificationDispatcher'); }
         return new AdmissionNotificationDispatcher();
+    }
+
+    /** Builds Phase 8 tenant-scoped admissions reports and CSV exports. */
+    public static function admissionReport(bool $getShared = true): AdmissionReportService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionReport'); }
+        return new AdmissionReportService();
+    }
+
+    /** Exposes Phase 8 notification outbox retries and tenant audit visibility. */
+    public static function admissionOperations(bool $getShared = true): AdmissionOperationsService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionOperations'); }
+        return new AdmissionOperationsService();
     }
 
 }
