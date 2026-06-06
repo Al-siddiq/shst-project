@@ -7,8 +7,14 @@ use App\Models\Tenant\Admissions\AdmissionDocumentRequirementModel;
 use App\Models\Tenant\Admissions\AdmissionProgrammeOpeningModel;
 use App\Models\Tenant\Admissions\AdmissionRequirementDefinitionModel;
 use App\Models\Tenant\Admissions\AdmissionSubjectRequirementModel;
+use App\Models\Tenant\Admissions\ApplicantApplicationModel;
+use App\Models\Tenant\Admissions\AdmissionListPublicationModel;
+use App\Models\Tenant\Admissions\AdmissionOfferAcceptanceModel;
+use App\Models\Tenant\Admissions\AdmissionClearanceStatusModel;
+use App\Models\Tenant\Admissions\AdmissionConversionEligibilityMarkerModel;
+use App\Models\Tenant\Admissions\AdmissionNotificationOutboxModel;
 
-/** Builds Phase 1 admission setup metrics; application counts arrive later. */
+/** Builds finalized Block 3 admissions setup, pipeline, and operations metrics. */
 class AdmissionDashboardService
 {
     /** @return array<string, mixed> */
@@ -42,6 +48,16 @@ class AdmissionDashboardService
             'requirementCount' => (new AdmissionRequirementDefinitionModel())->where('status', 'active')->countAllResults(),
             'subjectRequirementCount' => (new AdmissionSubjectRequirementModel())->where('status', 'active')->countAllResults(),
             'documentRequirementCount' => (new AdmissionDocumentRequirementModel())->where('status', 'active')->countAllResults(),
+            'submittedApplicationCount' => (new ApplicantApplicationModel())->where('status', 'submitted')->countAllResults(),
+            'reviewQueueCount' => (new ApplicantApplicationModel())->whereIn('status', ['submitted', 'under_review', 'correction_requested', 'reviewed', 'screening_pending', 'screened'])->countAllResults(),
+            'screenedApplicationCount' => (new ApplicantApplicationModel())->where('status', 'screened')->countAllResults(),
+            'offeredApplicationCount' => (new ApplicantApplicationModel())->where('status', 'offered')->countAllResults(),
+            'publishedListCount' => (new AdmissionListPublicationModel())->where('status', 'published')->countAllResults(),
+            'acceptedOfferCount' => (new AdmissionOfferAcceptanceModel())->where('acceptance_status', 'accepted')->countAllResults(),
+            'clearedApplicantCount' => (new AdmissionClearanceStatusModel())->where('clearance_status', 'cleared')->countAllResults(),
+            'conversionEligibleCount' => (new AdmissionConversionEligibilityMarkerModel())->countAllResults(),
+            'pendingOutboxCount' => (new AdmissionNotificationOutboxModel())->where('status', 'pending')->countAllResults(),
+            'failedOutboxCount' => (new AdmissionNotificationOutboxModel())->where('status', 'failed')->countAllResults(),
             'setupGaps' => $gaps,
         ];
     }

@@ -16,6 +16,8 @@ $routes->group('', ['filter' => 'tenantContext,publicTenant'], static function (
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('admissions/lists', 'PublicSite\AdmissionListController::index');
+    $routes->get('admissions/lists/(:segment)', 'PublicSite\AdmissionListController::show/$1');
     $routes->get('admissions/programmes', 'PublicSite\AdmissionProgrammeController::index');
     $routes->get('admissions/programmes/(:num)', 'PublicSite\AdmissionProgrammeController::show/$1');
     $routes->get('apply', 'PublicSite\ApplicantStartController::index');
@@ -41,6 +43,8 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
     $routes->get('programmes', 'PublicSite\ProgrammeController::index');
     $routes->get('programmes/(:segment)', 'PublicSite\ProgrammeController::show/$1');
     $routes->get('admissions', 'PublicSite\AdmissionController::index');
+    $routes->get('admissions/lists', 'PublicSite\AdmissionListController::index');
+    $routes->get('admissions/lists/(:segment)', 'PublicSite\AdmissionListController::show/$1');
     $routes->get('admissions/programmes', 'PublicSite\AdmissionProgrammeController::index');
     $routes->get('admissions/programmes/(:num)', 'PublicSite\AdmissionProgrammeController::show/$1');
     $routes->get('apply', 'PublicSite\ApplicantStartController::index');
@@ -103,6 +107,90 @@ $routes->get('applicant/applications/(:segment)/preview', 'Applicant\Application
 $routes->post('applicant/applications/(:segment)/submit', 'Applicant\ApplicationController::submit/$1', [
     'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
 ]);
+$routes->get('applicant/offers', 'Applicant\OfferController::index', [
+    'filter' => 'protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/offers/accept', 'Applicant\OfferController::accept', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+$routes->post('applicant/offers/decline', 'Applicant\OfferController::decline', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,applicantAccess',
+]);
+
+
+// Phase 4 admissions review workspace. Route filters establish coarse tenant
+// and authority boundaries; AdmissionReviewService repeats all sensitive checks.
+$routes->group('tenant/admissions/applications', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.applications.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\ApplicationReviewController::index');
+    $routes->get('audit', 'Tenant\Admissions\ApplicationReviewController::audit', ['filter' => 'tenantAccess:authority:admissions.audit.view']);
+    $routes->get('(:num)', 'Tenant\Admissions\ApplicationReviewController::show/$1');
+});
+$routes->post('tenant/admissions/applications/(:num)/review', 'Tenant\Admissions\ApplicationReviewController::review/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.applications.review',
+]);
+$routes->post('tenant/admissions/documents/(:num)/review', 'Tenant\Admissions\ApplicationReviewController::reviewDocument/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.documents.review',
+]);
+$routes->post('tenant/admissions/applications/(:num)/screening', 'Tenant\Admissions\ApplicationReviewController::screening/$1', [
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.screening.manage',
+]);
+
+
+// Phase 5 decision workspace. Publication, acceptance, and clearance remain
+// intentionally outside this phase and are not routed here.
+$routes->group('tenant/admissions/decisions', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.decisions.manage',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\DecisionController::index');
+    $routes->post('batches', 'Tenant\Admissions\DecisionController::createBatch', ['filter' => 'csrf,tenantAccess:authority:admissions.shortlist.manage']);
+    $routes->post('batches/(:num)/applications/(:num)', 'Tenant\Admissions\DecisionController::addToBatch/$1/$2', ['filter' => 'csrf,tenantAccess:authority:admissions.shortlist.manage']);
+    $routes->post('applications/(:num)', 'Tenant\Admissions\DecisionController::decide/$1', ['filter' => 'csrf']);
+    $routes->post('(:num)/approve', 'Tenant\Admissions\DecisionController::approve/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.decisions.approve']);
+});
+
+
+// Phase 6 admission-list publication workspace. Preview and publish are split
+// by authority so unpublished lists remain private until explicit publication.
+$routes->group('tenant/admissions/lists', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.lists.preview',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\ListPublicationController::index');
+    $routes->get('(:num)', 'Tenant\Admissions\ListPublicationController::show/$1');
+    $routes->post('/', 'Tenant\Admissions\ListPublicationController::create', ['filter' => 'csrf']);
+    $routes->post('(:num)/entries', 'Tenant\Admissions\ListPublicationController::addEntry/$1', ['filter' => 'csrf']);
+    $routes->post('(:num)/publish', 'Tenant\Admissions\ListPublicationController::publish/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.lists.publish']);
+});
+
+
+// Phase 7 acceptance and clearance tracker. This creates only a Block 5
+// handoff marker and never creates student records inside Block 3.
+$routes->group('tenant/admissions/acceptance', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.acceptance.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\AcceptanceController::index');
+    $routes->post('applications/(:num)/clearance', 'Tenant\Admissions\AcceptanceController::clearance/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.clearance.manage']);
+    $routes->post('applications/(:num)/eligibility', 'Tenant\Admissions\AcceptanceController::eligibility/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.clearance.manage']);
+});
+
+
+
+// Phase 8 stabilization surfaces. Reports expose safe tenant-scoped CSVs,
+// while operations only re-queues notification intents and reads tenant audit.
+$routes->group('tenant/admissions/reports', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.reports.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\ReportController::index');
+    $routes->get('export/(:segment)', 'Tenant\Admissions\ReportController::export/$1');
+});
+
+$routes->group('tenant/admissions/operations', [
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.audit.view',
+], static function ($routes) {
+    $routes->get('/', 'Tenant\Admissions\OperationsController::index');
+    $routes->post('outbox/(:num)/retry', 'Tenant\Admissions\OperationsController::retryOutbox/$1', ['filter' => 'csrf']);
+});
 
 $routes->group('platform', static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.

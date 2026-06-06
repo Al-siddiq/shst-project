@@ -17,6 +17,7 @@ class AdmissionController extends BaseController
         // tenant-scoped admission-cycle and programme-opening discovery.
         $data['activeCycle'] = service('publicAdmissions')->activeCycle();
         $data['openProgrammes'] = service('publicAdmissions')->openProgrammes();
+        $data['publishedLists'] = service('admissionListPublication')->publicLists();
         if ($data['admissions'] !== null) {
             $data['metaTitle'] = ($data['admissions']['seo_title'] ?: $data['admissions']['title']) . ' | ' . $data['settings']['site_title'];
             $data['metaDescription'] = $data['admissions']['seo_description'] ?: ($data['admissions']['summary'] ?? '');

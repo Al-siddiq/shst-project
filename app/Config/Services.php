@@ -3,11 +3,18 @@
 namespace Config;
 
 use App\Services\AuditLogger;
+use App\Services\Admissions\AdmissionAcceptanceService;
 use App\Services\Admissions\AdmissionAuthorityProvisioner;
 use App\Services\Admissions\AdmissionConfigurationService;
+use App\Services\Admissions\AdmissionCorrectionWindowService;
 use App\Services\Admissions\AdmissionDashboardService;
+use App\Services\Admissions\AdmissionListPublicationService;
+use App\Services\Admissions\AdmissionOperationsService;
+use App\Services\Admissions\AdmissionReportService;
+use App\Services\Admissions\AdmissionDecisionService;
 use App\Services\Admissions\PublicAdmissionService;
 use App\Services\Admissions\AdmissionReferenceGenerator;
+use App\Services\Admissions\AdmissionReviewService;
 use App\Services\Admissions\ApplicantAccessPolicy;
 use App\Services\Admissions\ApplicantAuthRedirectService;
 use App\Services\Admissions\ApplicantProfileService;
@@ -371,6 +378,41 @@ class Services extends BaseService
         return new ApplicantAuthRedirectService();
     }
 
+    /** Validates temporary applicant correction access granted by reviewers. */
+    public static function admissionCorrectionWindow(bool $getShared = true): AdmissionCorrectionWindowService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionCorrectionWindow'); }
+        return new AdmissionCorrectionWindowService();
+    }
+
+    /** Owns Phase 7 offer acceptance, clearance placeholder, and handoff marker. */
+    public static function admissionAcceptance(bool $getShared = true): AdmissionAcceptanceService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionAcceptance'); }
+        return new AdmissionAcceptanceService();
+    }
+
+    /** Owns Phase 6 admission-list drafts, publication, and public reads. */
+    public static function admissionListPublication(bool $getShared = true): AdmissionListPublicationService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionListPublication'); }
+        return new AdmissionListPublicationService();
+    }
+
+    /** Owns Phase 5 shortlisting, decisions, approval, and offer issuance. */
+    public static function admissionDecision(bool $getShared = true): AdmissionDecisionService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionDecision'); }
+        return new AdmissionDecisionService();
+    }
+
+    /** Owns Phase 4 staff review queue, document review, and screening actions. */
+    public static function admissionReview(bool $getShared = true): AdmissionReviewService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionReview'); }
+        return new AdmissionReviewService();
+    }
+
     /** Owns applicant O'Level sittings and subject-grade rows. */
     public static function olevelApplication(bool $getShared = true): OlevelApplicationService
     {
@@ -404,6 +446,20 @@ class Services extends BaseService
     {
         if ($getShared) { return static::getSharedInstance('admissionNotificationDispatcher'); }
         return new AdmissionNotificationDispatcher();
+    }
+
+    /** Builds Phase 8 tenant-scoped admissions reports and CSV exports. */
+    public static function admissionReport(bool $getShared = true): AdmissionReportService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionReport'); }
+        return new AdmissionReportService();
+    }
+
+    /** Exposes Phase 8 notification outbox retries and tenant audit visibility. */
+    public static function admissionOperations(bool $getShared = true): AdmissionOperationsService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionOperations'); }
+        return new AdmissionOperationsService();
     }
 
 }

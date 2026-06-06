@@ -12,5 +12,6 @@
     <?php endif ?>
     <?php if ($activeCycle !== null): ?><div class="notice"><h2><?= esc($activeCycle['title']) ?></h2><p>Applications are open from <?= esc($activeCycle['opens_at']) ?> until <?= esc($activeCycle['closes_at']) ?>.</p><?php if (! empty($activeCycle['instructions'])): ?><p><?= nl2br(esc($activeCycle['instructions'])) ?></p><?php endif ?><p><a class="button" href="<?= esc(public_site_url('admission_programmes')) ?>">View open programmes</a></p></div><?php endif ?>
     <?php if ($openProgrammes !== []): ?><div><h2>Currently open programmes</h2><ul><?php foreach ($openProgrammes as $programme): ?><li><a href="<?= esc(public_site_url('admission_programme', [$programme['id']])) ?>"><?= esc($programme['programme_name']) ?></a></li><?php endforeach ?></ul></div><?php endif ?>
+    <?php if (($publishedLists ?? []) !== []): ?><div><h2>Published admission lists</h2><ul><?php foreach ($publishedLists as $list): ?><li><a href="<?= esc(public_site_url('admission_list', [$list['public_token']])) ?>"><?= esc($list['title']) ?></a></li><?php endforeach ?></ul><p><a href="<?= esc(public_site_url('admission_lists')) ?>">View all admission lists</a></p></div><?php endif ?>
 </div></section>
 <?= $this->endSection() ?>

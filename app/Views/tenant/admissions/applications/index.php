@@ -1,0 +1,6 @@
+<?= $this->extend('layouts/tenant_admin') ?><?= $this->section('content') ?>
+<h1>Application review queue</h1><p>Submitted applications for the active tenant only.</p>
+<section class="admin-grid"><?php foreach($metrics as $label => $count): ?><article class="admin-card"><strong><?= esc((string) $count) ?></strong><br><?= esc(str_replace('_', ' ', $label)) ?></article><?php endforeach ?></section>
+<form method="get"><label>Status filter <select name="status"><option value="">All reviewable</option><?php foreach(['submitted','under_review','correction_requested','reviewed','screening_pending','screened'] as $status): ?><option value="<?= esc($status) ?>" <?= $statusFilter===$status?'selected':'' ?>><?= esc($status) ?></option><?php endforeach ?></select></label><button>Filter</button></form>
+<table><thead><tr><th>Application No</th><th>Status</th><th>Submitted</th><th></th></tr></thead><tbody><?php foreach($applications as $application): ?><tr><td><?= esc($application['application_number'] ?? 'Pending') ?></td><td><?= esc($application['status']) ?></td><td><?= esc($application['submitted_at'] ?? '') ?></td><td><a href="<?= site_url('tenant/admissions/applications/'.$application['id']) ?>">Review</a></td></tr><?php endforeach ?></tbody></table>
+<?= $this->endSection() ?>
