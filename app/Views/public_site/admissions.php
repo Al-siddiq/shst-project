@@ -10,5 +10,7 @@
         <?php endforeach ?>
         <?php if ($applicationUrl !== null): ?><p><a class="button" href="<?= esc($applicationUrl) ?>"><?= esc($admissions['application_link_label'] ?: 'Open application portal') ?></a></p><?php else: ?><p class="notice">Applications portal link will be available when configured.</p><?php endif ?>
     <?php endif ?>
+    <?php if ($activeCycle !== null): ?><div class="notice"><h2><?= esc($activeCycle['title']) ?></h2><p>Applications are open from <?= esc($activeCycle['opens_at']) ?> until <?= esc($activeCycle['closes_at']) ?>.</p><?php if (! empty($activeCycle['instructions'])): ?><p><?= nl2br(esc($activeCycle['instructions'])) ?></p><?php endif ?><p><a class="button" href="<?= esc(public_site_url('admission_programmes')) ?>">View open programmes</a></p></div><?php endif ?>
+    <?php if ($openProgrammes !== []): ?><div><h2>Currently open programmes</h2><ul><?php foreach ($openProgrammes as $programme): ?><li><a href="<?= esc(public_site_url('admission_programme', [$programme['id']])) ?>"><?= esc($programme['programme_name']) ?></a></li><?php endforeach ?></ul></div><?php endif ?>
 </div></section>
 <?= $this->endSection() ?>

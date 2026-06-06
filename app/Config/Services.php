@@ -3,6 +3,22 @@
 namespace Config;
 
 use App\Services\AuditLogger;
+use App\Services\Admissions\AdmissionAuthorityProvisioner;
+use App\Services\Admissions\AdmissionConfigurationService;
+use App\Services\Admissions\AdmissionDashboardService;
+use App\Services\Admissions\PublicAdmissionService;
+use App\Services\Admissions\AdmissionReferenceGenerator;
+use App\Services\Admissions\ApplicantAccessPolicy;
+use App\Services\Admissions\ApplicantAuthRedirectService;
+use App\Services\Admissions\ApplicantProfileService;
+use App\Services\Admissions\ApplicationDraftService;
+use App\Services\Admissions\ApplicantDocumentStorage;
+use App\Services\Admissions\ApplicantIdentityNormalizer;
+use App\Services\Admissions\AdmissionNotificationDispatcher;
+use App\Services\Admissions\ApplicantDocumentService;
+use App\Services\Admissions\ApplicationCompletionService;
+use App\Services\Admissions\ApplicationSubmissionService;
+use App\Services\Admissions\OlevelApplicationService;
 use App\Services\LayoutResolver;
 use App\Services\NavigationResolver;
 use App\Services\ThemeResolver;
@@ -263,4 +279,131 @@ class Services extends BaseService
 
         return new WebsiteAuthorityProvisioner();
     }
+
+    /** Provisions the stable Block 3 authority catalogue into one tenant. */
+    public static function admissionAuthorityProvisioner(bool $getShared = true): AdmissionAuthorityProvisioner
+    {
+        if ($getShared) {
+            return static::getSharedInstance('admissionAuthorityProvisioner');
+        }
+
+        return new AdmissionAuthorityProvisioner();
+    }
+
+    /** Normalizes email and Nigerian mobile identifiers before Shield lookup. */
+    public static function applicantIdentityNormalizer(bool $getShared = true): ApplicantIdentityNormalizer
+    {
+        if ($getShared) {
+            return static::getSharedInstance('applicantIdentityNormalizer');
+        }
+
+        return new ApplicantIdentityNormalizer();
+    }
+
+    /** Enforces applicant profile and private-document ownership. */
+    public static function applicantAccessPolicy(bool $getShared = true): ApplicantAccessPolicy
+    {
+        if ($getShared) {
+            return static::getSharedInstance('applicantAccessPolicy');
+        }
+
+        return new ApplicantAccessPolicy();
+    }
+
+    /** Resolves private applicant files beneath the admission storage root. */
+    public static function applicantDocumentStorage(bool $getShared = true): ApplicantDocumentStorage
+    {
+        if ($getShared) {
+            return static::getSharedInstance('applicantDocumentStorage');
+        }
+
+        return new ApplicantDocumentStorage();
+    }
+
+    /** Allocates tenant-aware application reference skeleton values. */
+    public static function admissionReferenceGenerator(bool $getShared = true): AdmissionReferenceGenerator
+    {
+        if ($getShared) {
+            return static::getSharedInstance('admissionReferenceGenerator');
+        }
+
+        return new AdmissionReferenceGenerator();
+    }
+    /** Owns tenant-safe Phase 1 admission setup mutations. */
+    public static function admissionConfiguration(bool $getShared = true): AdmissionConfigurationService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionConfiguration'); }
+        return new AdmissionConfigurationService();
+    }
+
+    /** Exposes sanitized active-cycle and open-programme public discovery. */
+    public static function publicAdmissions(bool $getShared = true): PublicAdmissionService
+    {
+        if ($getShared) { return static::getSharedInstance('publicAdmissions'); }
+        return new PublicAdmissionService();
+    }
+
+    /** Builds tenant-scoped admission setup gaps for the staff dashboard. */
+    public static function admissionDashboard(bool $getShared = true): AdmissionDashboardService
+    {
+        if ($getShared) { return static::getSharedInstance('admissionDashboard'); }
+        return new AdmissionDashboardService();
+    }
+
+    /** Creates or updates the tenant applicant profile owned by the Shield user. */
+    public static function applicantProfile(bool $getShared = true): ApplicantProfileService
+    {
+        if ($getShared) { return static::getSharedInstance('applicantProfile'); }
+        return new ApplicantProfileService();
+    }
+
+    /** Owns Phase 2 draft start, resume, and biodata autosave. */
+    public static function applicationDraft(bool $getShared = true): ApplicationDraftService
+    {
+        if ($getShared) { return static::getSharedInstance('applicationDraft'); }
+        return new ApplicationDraftService();
+    }
+
+    /** Centralizes tenant-aware Shield redirect links for applicant surfaces. */
+    public static function applicantAuthRedirect(bool $getShared = true): ApplicantAuthRedirectService
+    {
+        if ($getShared) { return static::getSharedInstance('applicantAuthRedirect'); }
+        return new ApplicantAuthRedirectService();
+    }
+
+    /** Owns applicant O'Level sittings and subject-grade rows. */
+    public static function olevelApplication(bool $getShared = true): OlevelApplicationService
+    {
+        if ($getShared) { return static::getSharedInstance('olevelApplication'); }
+        return new OlevelApplicationService();
+    }
+
+    /** Owns private applicant document upload and replacement metadata. */
+    public static function applicantDocument(bool $getShared = true): ApplicantDocumentService
+    {
+        if ($getShared) { return static::getSharedInstance('applicantDocument'); }
+        return new ApplicantDocumentService();
+    }
+
+    /** Evaluates draft completion before preview or final submission. */
+    public static function applicationCompletion(bool $getShared = true): ApplicationCompletionService
+    {
+        if ($getShared) { return static::getSharedInstance('applicationCompletion'); }
+        return new ApplicationCompletionService();
+    }
+
+    /** Performs idempotent Phase 3 application preview and final submission. */
+    public static function applicationSubmission(bool $getShared = true): ApplicationSubmissionService
+    {
+        if ($getShared) { return static::getSharedInstance('applicationSubmission'); }
+        return new ApplicationSubmissionService();
+    }
+
+    /** Queues admission notification intent without implementing delivery. */
+    public static function admissionNotificationDispatcher(bool $getShared = true): AdmissionNotificationDispatcher
+    {
+        if ($getShared) { return static::getSharedInstance('admissionNotificationDispatcher'); }
+        return new AdmissionNotificationDispatcher();
+    }
+
 }
