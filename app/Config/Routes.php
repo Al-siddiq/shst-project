@@ -59,7 +59,7 @@ $routes->group('t/(:segment)', ['filter' => 'tenantContext,publicTenant'], stati
     $routes->get('gallery/(:segment)', 'PublicSite\GalleryController::show/$1');
 });
 
-$routes->group('auth', static function ($routes) {
+$routes->group('auth', ['filter' => 'csrf,tenantContext,sensitiveRateLimit:10:60'], static function ($routes) {
     // Shield owns registration, login, logout, verification, and recovery.
     service('auth')->routes($routes);
     $routes->get('identifier/(:segment)', 'AuthController::identifierPolicy/$1');
@@ -121,57 +121,57 @@ $routes->post('applicant/offers/decline', 'Applicant\OfferController::decline', 
 // Phase 4 admissions review workspace. Route filters establish coarse tenant
 // and authority boundaries; AdmissionReviewService repeats all sensitive checks.
 $routes->group('tenant/admissions/applications', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.applications.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.applications.view',
 ], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\ApplicationReviewController::index');
-    $routes->get('audit', 'Tenant\Admissions\ApplicationReviewController::audit', ['filter' => 'tenantAccess:authority:admissions.audit.view']);
+    $routes->get('audit', 'Tenant\Admissions\ApplicationReviewController::audit', ['filter' => 'tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.audit.view']);
     $routes->get('(:num)', 'Tenant\Admissions\ApplicationReviewController::show/$1');
 });
 $routes->post('tenant/admissions/applications/(:num)/review', 'Tenant\Admissions\ApplicationReviewController::review/$1', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.applications.review',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.applications.review',
 ]);
 $routes->post('tenant/admissions/documents/(:num)/review', 'Tenant\Admissions\ApplicationReviewController::reviewDocument/$1', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.documents.review',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.documents.review',
 ]);
 $routes->post('tenant/admissions/applications/(:num)/screening', 'Tenant\Admissions\ApplicationReviewController::screening/$1', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.screening.manage',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.screening.manage',
 ]);
 
 
 // Phase 5 decision workspace. Publication, acceptance, and clearance remain
 // intentionally outside this phase and are not routed here.
 $routes->group('tenant/admissions/decisions', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.decisions.manage',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.decisions.manage',
 ], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\DecisionController::index');
-    $routes->post('batches', 'Tenant\Admissions\DecisionController::createBatch', ['filter' => 'csrf,tenantAccess:authority:admissions.shortlist.manage']);
-    $routes->post('batches/(:num)/applications/(:num)', 'Tenant\Admissions\DecisionController::addToBatch/$1/$2', ['filter' => 'csrf,tenantAccess:authority:admissions.shortlist.manage']);
+    $routes->post('batches', 'Tenant\Admissions\DecisionController::createBatch', ['filter' => 'csrf,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.shortlist.manage']);
+    $routes->post('batches/(:num)/applications/(:num)', 'Tenant\Admissions\DecisionController::addToBatch/$1/$2', ['filter' => 'csrf,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.shortlist.manage']);
     $routes->post('applications/(:num)', 'Tenant\Admissions\DecisionController::decide/$1', ['filter' => 'csrf']);
-    $routes->post('(:num)/approve', 'Tenant\Admissions\DecisionController::approve/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.decisions.approve']);
+    $routes->post('(:num)/approve', 'Tenant\Admissions\DecisionController::approve/$1', ['filter' => 'csrf,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.decisions.approve']);
 });
 
 
 // Phase 6 admission-list publication workspace. Preview and publish are split
 // by authority so unpublished lists remain private until explicit publication.
 $routes->group('tenant/admissions/lists', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.lists.preview',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.lists.preview',
 ], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\ListPublicationController::index');
     $routes->get('(:num)', 'Tenant\Admissions\ListPublicationController::show/$1');
     $routes->post('/', 'Tenant\Admissions\ListPublicationController::create', ['filter' => 'csrf']);
     $routes->post('(:num)/entries', 'Tenant\Admissions\ListPublicationController::addEntry/$1', ['filter' => 'csrf']);
-    $routes->post('(:num)/publish', 'Tenant\Admissions\ListPublicationController::publish/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.lists.publish']);
+    $routes->post('(:num)/publish', 'Tenant\Admissions\ListPublicationController::publish/$1', ['filter' => 'csrf,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.lists.publish']);
 });
 
 
 // Phase 7 acceptance and clearance tracker. This creates only a Block 5
 // handoff marker and never creates student records inside Block 3.
 $routes->group('tenant/admissions/acceptance', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.acceptance.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.acceptance.view',
 ], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\AcceptanceController::index');
-    $routes->post('applications/(:num)/clearance', 'Tenant\Admissions\AcceptanceController::clearance/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.clearance.manage']);
-    $routes->post('applications/(:num)/eligibility', 'Tenant\Admissions\AcceptanceController::eligibility/$1', ['filter' => 'csrf,tenantAccess:authority:admissions.clearance.manage']);
+    $routes->post('applications/(:num)/clearance', 'Tenant\Admissions\AcceptanceController::clearance/$1', ['filter' => 'csrf,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.clearance.manage']);
+    $routes->post('applications/(:num)/eligibility', 'Tenant\Admissions\AcceptanceController::eligibility/$1', ['filter' => 'csrf,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.clearance.manage']);
 });
 
 
@@ -179,23 +179,26 @@ $routes->group('tenant/admissions/acceptance', [
 // Phase 8 stabilization surfaces. Reports expose safe tenant-scoped CSVs,
 // while operations only re-queues notification intents and reads tenant audit.
 $routes->group('tenant/admissions/reports', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.reports.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.reports.view',
 ], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\ReportController::index');
     $routes->get('export/(:segment)', 'Tenant\Admissions\ReportController::export/$1');
 });
 
 $routes->group('tenant/admissions/operations', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.audit.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.audit.view',
 ], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\OperationsController::index');
     $routes->post('outbox/(:num)/retry', 'Tenant\Admissions\OperationsController::retryOutbox/$1', ['filter' => 'csrf']);
 });
 
-$routes->group('platform', static function ($routes) {
+$routes->group('platform', ['filter' => 'protectedAuth,platformAccess'], static function ($routes) {
     // Phase 2 platform tenant onboarding skeleton endpoints.
     $routes->get('tenants', 'Platform\\TenantController::index');
-    $routes->post('tenants', 'Platform\\TenantController::create');
+    $routes->post('tenants', 'Platform\\TenantController::create', ['filter' => 'csrf,sensitiveRateLimit:10:60']);
+    $routes->get('support', 'Platform\\SupportAccessController::index');
+    $routes->post('support/start', 'Platform\\SupportAccessController::start', ['filter' => 'csrf,sensitiveRateLimit:5:60']);
+    $routes->post('support/end', 'Platform\\SupportAccessController::end', ['filter' => 'csrf']);
 });
 
 $routes->group('internal', ['filter' => 'protectedAuth'], static function ($routes) {
@@ -206,7 +209,7 @@ $routes->group('internal', ['filter' => 'protectedAuth'], static function ($rout
 });
 
 
-$routes->group('tenant/config', ['filter' => 'protectedAuth,tenantContext:required'], static function ($routes) {
+$routes->group('tenant/config', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin:authority:school.configuration.manage'], static function ($routes) {
     // Phase 3 tenant configuration foundation endpoints.
     $routes->post('profile', 'Tenant\ConfigurationController::profileUpsert');
     $routes->post('academic-sessions', 'Tenant\ConfigurationController::createAcademicSession');
@@ -219,7 +222,7 @@ $routes->group('tenant/config', ['filter' => 'protectedAuth,tenantContext:requir
 });
 
 
-$routes->group('tenant/access', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:tenant.access.manage'], static function ($routes) {
+$routes->group('tenant/access', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin:authority:tenant.access.manage,sensitiveRateLimit:20:60'], static function ($routes) {
     // Phase 4 access-control foundation endpoints.
     $routes->post('memberships', 'Tenant\AccessController::createMembership');
     $routes->post('groups', 'Tenant\AccessController::assignGroup');
@@ -232,7 +235,7 @@ $routes->get('tenant/navigation', 'Tenant\AccessController::navigation', [
 ]);
 
 
-$routes->group('tenant/theme', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:school.configuration.manage'], static function ($routes) {
+$routes->group('tenant/theme', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin:authority:school.configuration.manage'], static function ($routes) {
     // Phase 5 tenant theme and department identity endpoints.
     $routes->get('/', 'Tenant\ThemeController::show');
     $routes->post('/', 'Tenant\ThemeController::upsertTheme');
@@ -240,7 +243,7 @@ $routes->group('tenant/theme', ['filter' => 'protectedAuth,tenantContext:require
 });
 
 $routes->get('tenant/audit-logs', 'Tenant\AuditController::index', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:tenant.access.manage',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin:authority:tenant.access.manage',
 ]);
 
 $routes->get('internal/layout/(:segment)', 'Internal\LayoutController::show/$1', [
@@ -258,7 +261,7 @@ $routes->get('t/(:segment)/media/(:num)/(:segment)', 'PublicSite\\MediaControlle
 ]);
 
 $routes->group('tenant/website/media', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.media.manage',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.media.manage',
 ], static function ($routes) {
     // Physical file handling remains behind authorized endpoints because
     // browsers must never submit or infer filesystem paths.
@@ -273,7 +276,7 @@ $routes->group('tenant/website/media', [
 // Phase 2 tenant-admin forms edit public extensions only. Operational academic
 // records remain managed by Block 1 configuration endpoints.
 $routes->group('tenant/website/showcase', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.edit',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.edit',
 ], static function ($routes) {
     $routes->get('departments', 'Tenant\Website\ShowcaseController::departments');
     $routes->post('departments', 'Tenant\Website\ShowcaseController::saveDepartment');
@@ -288,41 +291,41 @@ $routes->group('tenant/website/showcase', [
 // Filters provide an early HTTP boundary; services repeat authority checks so
 // future CLI or API callers cannot bypass the same policy.
 $routes->group('tenant/website/editorial', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:website.content.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.view',
 ], static function ($routes) {
     $routes->get('(:segment)', 'Tenant\Website\EditorialController::index/$1');
     $routes->get('(:segment)/form', 'Tenant\Website\EditorialController::form/$1');
 });
 $routes->group('tenant/website/editorial', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.create|website.content.edit',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.create|website.content.edit',
 ], static function ($routes) {
     $routes->post('(:segment)/draft', 'Tenant\Website\EditorialController::saveDraft/$1');
     $routes->post('(:segment)/(:num)/draft', 'Tenant\Website\EditorialController::moveToDraft/$1/$2');
 });
 $routes->group('tenant/website/editorial', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.publish',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.publish',
 ], static function ($routes) {
     $routes->post('(:segment)/(:num)/schedule', 'Tenant\Website\EditorialController::schedule/$1/$2');
     $routes->post('(:segment)/(:num)/publish', 'Tenant\Website\EditorialController::publish/$1/$2');
 });
 $routes->post('tenant/website/editorial/(:segment)/(:num)/archive', 'Tenant\Website\EditorialController::archive/$1/$2', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.archive',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.archive',
 ]);
 $routes->post('tenant/website/editorial/(:segment)/(:num)/delete', 'Tenant\Website\EditorialController::delete/$1/$2', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.delete',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.delete',
 ]);
 
 
 // Phase 4 institutional showcase routes remain separated by capability: content
 // editors manage leadership copy while media managers own gallery reuse/order.
-$routes->group('tenant/website/institutional', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.edit'], static function ($routes) {
+$routes->group('tenant/website/institutional', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.edit'], static function ($routes) {
     $routes->get('management', 'Tenant\Website\InstitutionalShowcaseController::management');
     $routes->post('management', 'Tenant\Website\InstitutionalShowcaseController::saveManagement');
 });
 $routes->post('tenant/website/institutional/management/(:num)/archive', 'Tenant\Website\InstitutionalShowcaseController::archiveManagement/$1', [
-    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.content.archive',
+    'filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.content.archive',
 ]);
-$routes->group('tenant/website/institutional/gallery', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.media.manage'], static function ($routes) {
+$routes->group('tenant/website/institutional/gallery', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.media.manage'], static function ($routes) {
     $routes->get('/', 'Tenant\Website\InstitutionalShowcaseController::gallery');
     $routes->post('albums', 'Tenant\Website\InstitutionalShowcaseController::saveAlbum');
     $routes->post('albums/(:num)/archive', 'Tenant\Website\InstitutionalShowcaseController::archiveAlbum/$1');
@@ -334,38 +337,38 @@ $routes->group('tenant/website/institutional/gallery', ['filter' => 'csrf,protec
 // Phase 5 operational CMS routes expose tenant-only maintenance surfaces. Each
 // service repeats authorization so future JSON or CLI callers cannot bypass it.
 $routes->get('tenant/website', 'Tenant\Website\DashboardController::index', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:website.dashboard.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.dashboard.view',
 ]);
-$routes->group('tenant/website/settings', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.settings.manage'], static function ($routes) {
+$routes->group('tenant/website/settings', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.settings.manage'], static function ($routes) {
     $routes->get('/', 'Tenant\Website\SettingsController::index');
     $routes->post('/', 'Tenant\Website\SettingsController::save');
 });
-$routes->group('tenant/website/menu', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:website.menu.manage'], static function ($routes) {
+$routes->group('tenant/website/menu', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.menu.manage'], static function ($routes) {
     $routes->get('/', 'Tenant\Website\MenuController::index');
     $routes->post('/', 'Tenant\Website\MenuController::save');
     $routes->post('reorder', 'Tenant\Website\MenuController::reorder');
     $routes->post('(:num)/archive', 'Tenant\Website\MenuController::archive/$1');
 });
 $routes->get('tenant/website/audit', 'Tenant\Website\AuditController::index', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:website.audit.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:website.audit.view',
 ]);
 
 
 // Phase 1 admissions configuration routes remain narrow by authority. Services
 // repeat decisive checks and related-record tenant validation for non-HTTP use.
 $routes->get('tenant/admissions', 'Tenant\Admissions\DashboardController::index', [
-    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:authority:admissions.dashboard.view',
+    'filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.dashboard.view',
 ]);
-$routes->group('tenant/admissions/cycles', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.cycles.manage'], static function ($routes) {
+$routes->group('tenant/admissions/cycles', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.cycles.manage'], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\CycleController::index');
     $routes->post('/', 'Tenant\Admissions\CycleController::save');
     $routes->post('(:num)/transition/(:segment)', 'Tenant\Admissions\CycleController::transition/$1/$2');
 });
-$routes->group('tenant/admissions/programmes', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.programmes.manage'], static function ($routes) {
+$routes->group('tenant/admissions/programmes', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.programmes.manage'], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\ProgrammeOpeningController::index');
     $routes->post('/', 'Tenant\Admissions\ProgrammeOpeningController::save');
 });
-$routes->group('tenant/admissions/requirements', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:authority:admissions.requirements.manage'], static function ($routes) {
+$routes->group('tenant/admissions/requirements', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin|lecturer:authority:admissions.requirements.manage'], static function ($routes) {
     $routes->get('/', 'Tenant\Admissions\RequirementController::index');
     $routes->post('definitions', 'Tenant\Admissions\RequirementController::saveDefinition');
     $routes->post('subjects', 'Tenant\Admissions\RequirementController::saveSubject');

@@ -21,7 +21,7 @@ final class WebsitePhase3LifecycleTest extends CIUnitTestCase
     {
         parent::setUp();
         cache()->clean();
-        service('session')->remove('user_id');
+        service('session')->remove(['user_id', 'auth_groups']);
     }
 
     public function testPublicNewsPaginationExcludesDraftFutureAndOtherTenantRecords(): void
@@ -59,7 +59,7 @@ final class WebsitePhase3LifecycleTest extends CIUnitTestCase
         $tenant = $this->insertTenant('authority-tenant');
         $this->setTenant($tenant, 'authority-tenant');
         $userId = 501;
-        service('session')->set('user_id', $userId);
+        service('session')->set(['user_id' => $userId, 'auth_groups' => ['tenant_admin']]);
         $this->db->table('tenant_memberships')->insert(['tenant_id' => $tenant, 'user_id' => $userId, 'status' => 'active', 'is_active' => 1]);
         $this->grant($userId, 'website.content.create');
 
@@ -74,7 +74,7 @@ final class WebsitePhase3LifecycleTest extends CIUnitTestCase
         $tenant = $this->insertTenant('publisher-tenant');
         $this->setTenant($tenant, 'publisher-tenant');
         $userId = 502;
-        service('session')->set('user_id', $userId);
+        service('session')->set(['user_id' => $userId, 'auth_groups' => ['tenant_admin']]);
         $this->db->table('tenant_memberships')->insert(['tenant_id' => $tenant, 'user_id' => $userId, 'status' => 'active', 'is_active' => 1]);
         $this->grant($userId, 'website.content.create');
         $this->grant($userId, 'website.content.publish');

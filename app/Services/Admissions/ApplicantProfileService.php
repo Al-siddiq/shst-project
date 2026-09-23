@@ -21,6 +21,10 @@ class ApplicantProfileService
         if (! $this->guard->check() || ! $context->isResolved() || $userId === null) {
             throw new InvalidArgumentException('Authenticated applicant and tenant context are required.');
         }
+        if ($this->guard->isPlatformAdministrator()) {
+            throw new InvalidArgumentException('Platform administrator identities cannot become applicants.');
+        }
+        service('tenantIdentity')->bindUser($userId, $context, 'Applicant');
 
         $model = new ApplicantProfileModel();
         $profile = $model->where('user_id', $userId)->first();

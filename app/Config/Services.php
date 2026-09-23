@@ -32,6 +32,8 @@ use App\Services\ThemeResolver;
 use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
+use App\Services\TenantIdentityService;
+use App\Services\PlatformSupportAccessService;
 use App\Services\Website\MediaService;
 use App\Services\Website\InstitutionalShowcaseManagementService;
 use App\Services\Website\PublicInstitutionalShowcaseService;
@@ -54,6 +56,24 @@ use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
 {
+    public static function tenantIdentity(bool $getShared = true): TenantIdentityService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('tenantIdentity');
+        }
+
+        return new TenantIdentityService();
+    }
+
+    public static function platformSupportAccess(bool $getShared = true): PlatformSupportAccessService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('platformSupportAccess');
+        }
+
+        return new PlatformSupportAccessService();
+    }
+
     public static function tenantResolver(bool $getShared = true): TenantResolver
     {
         if ($getShared) {

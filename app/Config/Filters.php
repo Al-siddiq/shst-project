@@ -39,6 +39,8 @@ class Filters extends BaseFilters
         'tenantAccess'  => \App\Filters\TenantAccessFilter::class,
         'publicTenant'  => \App\Filters\PublicTenantFilter::class,
         'applicantAccess' => \App\Filters\ApplicantAccessFilter::class,
+        'platformAccess' => \App\Filters\PlatformAccessFilter::class,
+        'sensitiveRateLimit' => \App\Filters\SensitiveRateLimitFilter::class,
     ];
 
     /**
