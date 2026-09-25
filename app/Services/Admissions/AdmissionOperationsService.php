@@ -29,6 +29,11 @@ class AdmissionOperationsService
 
     public function retryOutbox(int $outboxId): int
     {
+        return service('transactional')->run(fn (): int => $this->retryOutboxMutation($outboxId));
+    }
+
+    private function retryOutboxMutation(int $outboxId): int
+    {
         $this->assertAuditAuthority();
         $model = new AdmissionNotificationOutboxModel();
         $record = $model->find($outboxId);

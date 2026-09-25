@@ -12,7 +12,7 @@ class ApplicationSubmissionSnapshotModel extends TenantScopedModel
     protected $returnType = 'array';
     protected $useSoftDeletes = true;
     protected $useTimestamps = true;
-    protected $allowedFields = ['tenant_id', 'applicant_application_id', 'application_number', 'snapshot_json', 'submitted_at', 'created_by', 'updated_by'];
+    protected $allowedFields = ['tenant_id', 'applicant_application_id', 'application_number', 'submission_version', 'snapshot_json', 'submitted_at', 'created_by', 'updated_by'];
     protected $beforeInsert = ['applyTenantInsertMetadata'];
     protected $beforeUpdate = ['applyTenantUpdateMetadata'];
 }

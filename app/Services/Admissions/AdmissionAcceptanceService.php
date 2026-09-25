@@ -32,8 +32,13 @@ class AdmissionAcceptanceService
     /** @return array<string, mixed> */
     public function acceptOwnOffer(array $payload = []): array
     {
+        return service('transactional')->run(fn (): array => $this->acceptOwnOfferMutation($payload));
+    }
+
+    private function acceptOwnOfferMutation(array $payload): array
+    {
         $state = $this->applicantOffer();
-        $offer = $state['offer'];
+        $offer = service('tenantRowLock')->lock('admission_offers', (int) $state['offer']['id']);
         if (! in_array($offer['offer_status'], self::ACCEPTABLE_OFFER_STATUSES, true)) {
             return $state;
         }
@@ -50,7 +55,7 @@ class AdmissionAcceptanceService
         (new ApplicantApplicationModel())->update((int) $offer['applicant_application_id'], ['status' => 'accepted']);
         $this->ensureClearancePlaceholder($offer, 'not_required');
         service('auditLogger')->record('admissions.offer.accepted', ['target_type' => 'admission_offer', 'target_id' => $offer['id'], 'summary' => 'Applicant accepted an admission offer.']);
-        service('admissionNotificationDispatcher')->queue('admissions.offer.accepted', null, ['offer_id' => $offer['id'], 'application_id' => $offer['applicant_application_id']]);
+        service('admissionNotificationDispatcher')->queue('admissions.offer.accepted', null, ['offer_id' => $offer['id'], 'application_id' => $offer['applicant_application_id']], 'in_app', 'offer-accepted:' . $offer['id']);
 
         return array_merge($this->offerState((new AdmissionOfferModel())->find((int) $offer['id'])), ['acceptance' => $acceptance]);
     }
@@ -58,8 +63,13 @@ class AdmissionAcceptanceService
     /** @return array<string, mixed> */
     public function declineOwnOffer(array $payload = []): array
     {
+        return service('transactional')->run(fn (): array => $this->declineOwnOfferMutation($payload));
+    }
+
+    private function declineOwnOfferMutation(array $payload): array
+    {
         $state = $this->applicantOffer();
-        $offer = $state['offer'];
+        $offer = service('tenantRowLock')->lock('admission_offers', (int) $state['offer']['id']);
         if ($offer['offer_status'] === 'declined') {
             return $state;
         }
@@ -75,7 +85,7 @@ class AdmissionAcceptanceService
         (new AdmissionOfferModel())->update((int) $offer['id'], ['offer_status' => 'declined']);
         (new ApplicantApplicationModel())->update((int) $offer['applicant_application_id'], ['status' => 'declined']);
         service('auditLogger')->record('admissions.offer.declined', ['target_type' => 'admission_offer', 'target_id' => $offer['id'], 'summary' => 'Applicant declined an admission offer.']);
-        service('admissionNotificationDispatcher')->queue('admissions.offer.declined', null, ['offer_id' => $offer['id'], 'application_id' => $offer['applicant_application_id']]);
+        service('admissionNotificationDispatcher')->queue('admissions.offer.declined', null, ['offer_id' => $offer['id'], 'application_id' => $offer['applicant_application_id']], 'in_app', 'offer-declined:' . $offer['id']);
 
         return array_merge($this->offerState((new AdmissionOfferModel())->find((int) $offer['id'])), ['acceptance' => $acceptance]);
     }
@@ -95,11 +105,17 @@ class AdmissionAcceptanceService
 
     public function updateClearance(int $applicationId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->updateClearanceMutation($applicationId, $payload));
+    }
+
+    private function updateClearanceMutation(int $applicationId, array $payload): int
+    {
         $this->assertAuthority('admissions.clearance.manage');
         $offer = (new AdmissionOfferModel())->where('applicant_application_id', $applicationId)->where('offer_status', 'accepted')->first();
         if ($offer === null) {
             throw new InvalidArgumentException('Only accepted offers can receive clearance updates.');
         }
+        $offer = service('tenantRowLock')->lock('admission_offers', (int) $offer['id']);
         $status = (string) ($payload['clearance_status'] ?? 'pending');
         $feeStatus = (string) ($payload['acceptance_fee_status'] ?? 'not_required');
         if (! in_array($status, self::CLEARANCE_STATUSES, true) || ! in_array($feeStatus, self::ACCEPTANCE_FEE_STATUSES, true)) {
@@ -128,12 +144,18 @@ class AdmissionAcceptanceService
 
     public function markEligible(int $applicationId): int
     {
+        return service('transactional')->run(fn (): int => $this->markEligibleMutation($applicationId));
+    }
+
+    private function markEligibleMutation(int $applicationId): int
+    {
         $this->assertAuthority('admissions.clearance.manage');
         $offer = (new AdmissionOfferModel())->where('applicant_application_id', $applicationId)->where('offer_status', 'accepted')->first();
         $clearance = (new AdmissionClearanceStatusModel())->where('applicant_application_id', $applicationId)->first();
         if ($offer === null || $clearance === null || $clearance['clearance_status'] !== 'cleared' || ! in_array($clearance['acceptance_fee_status'], self::ELIGIBLE_FEE_STATUSES, true)) {
             throw new InvalidArgumentException('Eligibility marker requires accepted offer, cleared status, and satisfied acceptance-fee placeholder.');
         }
+        $offer = service('tenantRowLock')->lock('admission_offers', (int) $offer['id']);
 
         $model = new AdmissionConversionEligibilityMarkerModel();
         $existing = $model->where('applicant_application_id', $applicationId)->first();

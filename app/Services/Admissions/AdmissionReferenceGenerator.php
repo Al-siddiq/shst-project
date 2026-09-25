@@ -2,7 +2,6 @@
 
 namespace App\Services\Admissions;
 
-use App\Models\Tenant\Admissions\AdmissionReferenceSequenceModel;
 use Config\Admissions;
 use RuntimeException;
 
@@ -23,26 +22,27 @@ class AdmissionReferenceGenerator
         }
 
         $db = db_connect();
-        $db->transStart();
-        $builder = $db->table('admission_reference_sequences');
-        $sequence = $builder
-            ->where('tenant_id', $context->tenantId)
-            ->where('namespace', $namespace)
-            ->get()
-            ->getRowArray();
-
-        if ($sequence === null) {
-            (new AdmissionReferenceSequenceModel())->insert(['namespace' => $namespace, 'next_value' => 2]);
-            $value = 1;
-        } else {
+        $value = service('transactional')->run(function ($db) use ($context, $namespace): int {
+            $table = $db->prefixTable('admission_reference_sequences');
+            if ($db->DBDriver === 'SQLite3') {
+                $db->query("INSERT OR IGNORE INTO {$table} (tenant_id, namespace, next_value) VALUES (?, ?, 1)", [$context->tenantId, $namespace]);
+                $suffix = '';
+            } else {
+                $db->query("INSERT IGNORE INTO {$table} (tenant_id, namespace, next_value) VALUES (?, ?, 1)", [$context->tenantId, $namespace]);
+                $suffix = ' FOR UPDATE';
+            }
+            $sequence = $db->query("SELECT id, next_value FROM {$table} WHERE tenant_id = ? AND namespace = ?{$suffix}", [$context->tenantId, $namespace])->getRowArray();
+            if ($sequence === null) {
+                throw new RuntimeException('Unable to initialize admission reference sequence.');
+            }
             $value = (int) $sequence['next_value'];
-            (new AdmissionReferenceSequenceModel())->update((int) $sequence['id'], ['next_value' => $value + 1]);
-        }
-        $db->transComplete();
+            $db->table('admission_reference_sequences')->where('id', $sequence['id'])->where('next_value', $value)->update(['next_value' => $value + 1]);
+            if ($db->affectedRows() !== 1) {
+                throw new RuntimeException('Concurrent admission reference allocation was not serialized.');
+            }
 
-        if (! $db->transStatus()) {
-            throw new RuntimeException('Unable to allocate admission reference.');
-        }
+            return $value;
+        });
 
         $config = config(Admissions::class);
 

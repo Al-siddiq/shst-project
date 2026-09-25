@@ -31,6 +31,11 @@ class AdmissionListPublicationService
 
     public function create(array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->createMutation($payload));
+    }
+
+    private function createMutation(array $payload): int
+    {
         $this->assertAuthority('admissions.lists.preview');
         $cycleId = (int) ($payload['admission_cycle_id'] ?? 0);
         $title = trim((string) ($payload['title'] ?? ''));
@@ -62,6 +67,13 @@ class AdmissionListPublicationService
 
     public function addOfferedApplication(int $publicationId, int $offerId, ?int $position = null): int
     {
+        return service('transactional')->run(fn (): int => $this->addOfferedApplicationMutation($publicationId, $offerId, $position));
+    }
+
+    private function addOfferedApplicationMutation(int $publicationId, int $offerId, ?int $position): int
+    {
+        service('tenantRowLock')->lock('admission_list_publications', $publicationId);
+        service('tenantRowLock')->lock('admission_offers', $offerId);
         $this->assertAuthority('admissions.lists.preview');
         $publication = $this->publication($publicationId, false);
         if ($publication['status'] !== 'draft') {
@@ -102,6 +114,16 @@ class AdmissionListPublicationService
 
     public function publish(int $publicationId): int
     {
+        $id = service('transactional')->run(fn (): int => $this->publishMutation($publicationId));
+        $publication = $this->publication($publicationId, true);
+        service('publicWebsiteCache')->forgetMany(['admissions.published-lists', 'admissions.published-list.' . $publication['public_token']]);
+
+        return $id;
+    }
+
+    private function publishMutation(int $publicationId): int
+    {
+        service('tenantRowLock')->lock('admission_list_publications', $publicationId);
         $this->assertAuthority('admissions.lists.publish');
         $publication = $this->publication($publicationId, false);
         if ($publication['status'] === 'published') {
@@ -113,9 +135,8 @@ class AdmissionListPublicationService
         }
         $now = Time::now()->toDateTimeString();
         (new AdmissionListPublicationModel())->update($publicationId, ['status' => 'published', 'published_at' => $now, 'published_by' => service('tenantAccess')->currentUserId()]);
-        service('publicWebsiteCache')->forgetMany(['admissions.published-lists', 'admissions.published-list.' . $publication['public_token']]);
         service('auditLogger')->record('admissions.list.published', ['target_type' => 'admission_list_publication', 'target_id' => $publicationId, 'summary' => 'Admissions staff published an admission list.', 'metadata' => ['entry_count' => count($entries)]]);
-        service('admissionNotificationDispatcher')->queue('admissions.list.published', null, ['publication_id' => $publicationId, 'entry_count' => count($entries)]);
+        service('admissionNotificationDispatcher')->queue('admissions.list.published', null, ['publication_id' => $publicationId, 'entry_count' => count($entries)], 'in_app', 'list-published:' . $publicationId);
 
         return $publicationId;
     }

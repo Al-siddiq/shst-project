@@ -87,7 +87,7 @@ class PublicInstitutionalShowcaseService
     /** Tenant-scoped generations invalidate every public showcase cache entry together. */
     private function key(string $suffix): string
     {
-        $revision = service('publicWebsiteCache')->remember('institutional.revision', static fn (): int => 1, 86400);
+        $revision = service('publicWebsiteCache')->revision('institutional.revision');
 
         return 'institutional.v' . $revision . '.' . $suffix;
     }

@@ -17,7 +17,7 @@ class CreateApplicantSubmissionTables extends Migration
             'submitted_at' => ['type' => 'DATETIME', 'null' => true, 'after' => 'last_saved_at'],
             'submission_snapshot_id' => ['type' => 'INT', 'unsigned' => true, 'null' => true, 'after' => 'submitted_at'],
         ]);
-        $this->db->query('CREATE UNIQUE INDEX uq_applicant_application_number ON applicant_applications (tenant_id, application_number)');
+        $this->db->query('CREATE UNIQUE INDEX uq_applicant_application_number ON ' . $this->db->prefixTable('applicant_applications') . ' (tenant_id, application_number)');
 
         $this->forge->addField([
             'code' => ['type' => 'VARCHAR', 'constraint' => 30],

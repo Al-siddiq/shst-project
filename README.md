@@ -62,6 +62,10 @@ PHP version 8.2 or higher is required, with the following extensions installed:
 > - If you are still using below PHP 8.2, you should upgrade immediately.
 > - The end of life date for PHP 8.2 will be December 31, 2026.
 
+The production database contract is **MySQL 8.4 LTS, InnoDB, utf8mb4**, using
+`READ COMMITTED` by default. Pin the supported 8.4 maintenance release in the
+deployment environment. SQLite is used only by lightweight development tests.
+
 Additionally, make sure that the following extensions are enabled in your PHP:
 
 - json (enabled by default - don't turn it off)
@@ -101,7 +105,7 @@ After running the Block 1 migrations, load a controlled demo dataset for full Bl
 php spark db:seed Block1DemoSeeder
 ```
 
-The seeder creates two tenants (`demo-sht-lagos` and `sample-chs-kano`) with tenant domains, tenant profiles, academic sessions, semesters, levels, departments, programmes, courses, programme-course mappings, memberships, IAM group assignments, operational authorities, authority grants, tenant themes, department identities, and audit log entries.
+The seeder creates two tenants (`demo-sht-lagos` and `sample-chs-kano`) with tenant domains, tenant profiles, academic sessions, semesters, levels, departments, programmes, courses, programme-course mappings, memberships, operational authorities, authority grants, tenant themes, department identities, and audit log entries. It does not write the retired tenant IAM broad-group table.
 
 Demo actor IDs used by the seed data:
 

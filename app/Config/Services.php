@@ -33,7 +33,11 @@ use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
 use App\Services\TenantIdentityService;
+use App\Services\TenantConfigurationService;
 use App\Services\PlatformSupportAccessService;
+use App\Services\TransactionalService;
+use App\Services\IdempotencyService;
+use App\Services\TenantRowLock;
 use App\Services\Website\MediaService;
 use App\Services\Website\InstitutionalShowcaseManagementService;
 use App\Services\Website\PublicInstitutionalShowcaseService;
@@ -56,6 +60,29 @@ use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
 {
+    public static function tenantRowLock(bool $getShared = true): TenantRowLock
+    {
+        if ($getShared) return static::getSharedInstance('tenantRowLock');
+        return new TenantRowLock();
+    }
+    public static function idempotency(bool $getShared = true): IdempotencyService
+    {
+        if ($getShared) return static::getSharedInstance('idempotency');
+        return new IdempotencyService();
+    }
+    public static function tenantConfiguration(bool $getShared = true): TenantConfigurationService
+    {
+        if ($getShared) return static::getSharedInstance('tenantConfiguration');
+        return new TenantConfigurationService();
+    }
+    public static function transactional(bool $getShared = true): TransactionalService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('transactional');
+        }
+
+        return new TransactionalService();
+    }
     public static function tenantIdentity(bool $getShared = true): TenantIdentityService
     {
         if ($getShared) {

@@ -38,7 +38,9 @@ class ApplicantDocumentStorage
         }
 
         $extension = $config->documentExtensionsByMimeType[$mimeType];
-        $directory = 'tenant-' . (int) $application['tenant_id'] . DIRECTORY_SEPARATOR . 'application-' . (int) $application['id'];
+        // New uploads enter a private quarantine namespace. Phase 4's scanner
+        // promotes only clean objects; callers must never serve this path.
+        $directory = 'quarantine' . DIRECTORY_SEPARATOR . 'tenant-' . (int) $application['tenant_id'] . DIRECTORY_SEPARATOR . 'application-' . (int) $application['id'];
         $absoluteDirectory = $this->storageRoot() . DIRECTORY_SEPARATOR . $directory;
         if (! is_dir($absoluteDirectory) && ! mkdir($absoluteDirectory, 0775, true) && ! is_dir($absoluteDirectory)) {
             throw new RuntimeException('Private admission upload directory could not be created.');
@@ -57,6 +59,19 @@ class ApplicantDocumentStorage
             'size_bytes' => $file->getSize(),
             'checksum_sha256' => hash_file('sha256', $absolutePath),
         ];
+    }
+
+    /** Best-effort compensation when metadata cannot be committed. */
+    public function discard(array $stored): void
+    {
+        try {
+            $path = $this->privateFile($stored);
+            if (! unlink($path)) {
+                throw new RuntimeException('Quarantined applicant document could not be removed.');
+            }
+        } catch (InvalidArgumentException) {
+            // An already absent staged object is a successful compensation.
+        }
     }
 
     /** @param array<string, mixed> $document */

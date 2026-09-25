@@ -159,7 +159,7 @@ class PublicEditorialService
     /** Cache generations invalidate all pages without handler-specific tags. */
     private function cachePrefix(): string
     {
-        $revision = service('publicWebsiteCache')->remember('editorial.revision', static fn (): int => 1, 86400);
+        $revision = service('publicWebsiteCache')->revision('editorial.revision');
 
         return 'editorial.v' . $revision;
     }

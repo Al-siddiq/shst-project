@@ -66,6 +66,12 @@ class AdmissionReviewService
 
     public function reviewApplication(int $applicationId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->reviewApplicationMutation($applicationId, $payload));
+    }
+
+    private function reviewApplicationMutation(int $applicationId, array $payload): int
+    {
+        service('tenantRowLock')->lock('applicant_applications', $applicationId);
         $this->assertAuthority('admissions.applications.review');
         $application = $this->application($applicationId);
         $reviewStatus = (string) ($payload['review_status'] ?? 'in_review');
@@ -101,6 +107,12 @@ class AdmissionReviewService
 
     public function reviewDocument(int $documentId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->reviewDocumentMutation($documentId, $payload));
+    }
+
+    private function reviewDocumentMutation(int $documentId, array $payload): int
+    {
+        service('tenantRowLock')->lock('application_documents', $documentId);
         $this->assertAuthority('admissions.documents.review');
         $document = (new ApplicationDocumentModel())->find($documentId);
         if ($document === null || empty($document['application_id'])) {
@@ -129,6 +141,12 @@ class AdmissionReviewService
 
     public function recordScreening(int $applicationId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->recordScreeningMutation($applicationId, $payload));
+    }
+
+    private function recordScreeningMutation(int $applicationId, array $payload): int
+    {
+        service('tenantRowLock')->lock('applicant_applications', $applicationId);
         $this->assertAuthority('admissions.screening.manage');
         $application = $this->application($applicationId);
         $outcome = (string) ($payload['outcome'] ?? 'pending');

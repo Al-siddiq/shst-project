@@ -16,6 +16,11 @@ class ApplicantProfileService
     /** @return array<string, mixed> */
     public function ensureProfile(?string $identifier = null): array
     {
+        return service('transactional')->run(fn (): array => $this->ensureProfileMutation($identifier));
+    }
+
+    private function ensureProfileMutation(?string $identifier): array
+    {
         $context = service('tenantContextManager')->current();
         $userId = $this->guard->userId();
         if (! $this->guard->check() || ! $context->isResolved() || $userId === null) {

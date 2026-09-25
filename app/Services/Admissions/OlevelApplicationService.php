@@ -26,10 +26,16 @@ class OlevelApplicationService
     /** @return array<string, mixed> */
     public function save(string $applicationToken, array $payload): array
     {
+        return service('transactional')->run(fn (): array => $this->saveMutation($applicationToken, $payload));
+    }
+
+    private function saveMutation(string $applicationToken, array $payload): array
+    {
         $application = service('applicantAccessPolicy')->ownedApplication(service('tenantContextManager')->current(), $applicationToken);
         if ($application === null) {
             throw new InvalidArgumentException('Application was not found for this applicant.');
         }
+        service('tenantRowLock')->lock('applicant_applications', (int) $application['id']);
         service('admissionCorrectionWindow')->assertApplicantMayEdit($application);
 
         $examType = strtoupper(trim((string) ($payload['exam_type_code'] ?? '')));
