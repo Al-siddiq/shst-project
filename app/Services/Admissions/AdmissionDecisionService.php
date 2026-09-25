@@ -144,7 +144,7 @@ class AdmissionDecisionService
         if ($decisionType === 'offered' && $status === 'approved') {
             $this->issueOffer($decisionId, $application, $payload);
         }
-        service('admissionNotificationDispatcher')->queue('admissions.decision.recorded', null, ['application_id' => $applicationId, 'decision_type' => $decisionType, 'decision_status' => $status], 'in_app', 'decision-recorded:' . $decisionId);
+        service('admissionNotificationDispatcher')->queueApplicant('admissions.decision.recorded', $applicationId, ['decision_id'=>$decisionId, 'decision_type'=>$decisionType, 'decision_status'=>$status]);
 
         return $decisionId;
     }
@@ -235,7 +235,7 @@ class AdmissionDecisionService
             'expires_at' => $expiresAt,
         ], true);
         service('auditLogger')->record('admissions.offer.issued', ['target_type' => 'admission_offer', 'target_id' => $offerId, 'summary' => 'Admissions staff issued an admission offer.', 'metadata' => ['offer_reference' => $reference]]);
-        service('admissionNotificationDispatcher')->queue('admissions.offer.issued', null, ['application_id' => $application['id'], 'offer_reference' => $reference], 'in_app', 'offer-issued:' . $offerId);
+        service('admissionNotificationDispatcher')->queueApplicant('admissions.offer.issued', (int)$application['id'], ['offer_id'=>$offerId, 'offer_reference'=>$reference]);
 
         return $offerId;
     }

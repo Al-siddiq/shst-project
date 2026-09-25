@@ -191,6 +191,22 @@ class MediaService
         ]);
     }
 
+    public function reconcileDerivatives(): array
+    {
+        $result=['repaired'=>0,'missing_original'=>0];
+        foreach((new MediaFileModel())->findAll() as $media){
+            try{$source=$this->absolutePath($media['storage_path']);}catch(InvalidArgumentException){$result['missing_original']++;continue;}
+            $current=$this->decodeDerivatives($media); $missing=false;
+            foreach($this->policy()->derivatives as $variant=>$size){if(!isset($current[$variant])||!is_file($this->storageRoot().'/'.$current[$variant])){$missing=true;break;}}
+            if(!$missing)continue;
+            $directory=dirname($media['storage_path']); $base=pathinfo($media['stored_name'],PATHINFO_FILENAME);
+            $derivatives=$this->createDerivatives($source,$directory,$base,$media['extension']);
+            (new MediaFileModel())->update($media['id'],['derivatives'=>json_encode($derivatives,JSON_THROW_ON_ERROR)]); $result['repaired']++;
+            service('auditLogger')->record('website.media.derivatives_reconciled',['target_type'=>'media_file','target_id'=>$media['id'],'summary'=>'Missing website media derivatives were regenerated.']);
+        }
+        if($result['repaired']>0)$this->invalidateShowcaseCache(); return $result;
+    }
+
     /** @return array<string, string> */
     private function createDerivatives(string $source, string $directory, string $baseName, string $extension): array
     {

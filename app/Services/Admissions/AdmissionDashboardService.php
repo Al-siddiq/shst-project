@@ -57,7 +57,7 @@ class AdmissionDashboardService
             'clearedApplicantCount' => (new AdmissionClearanceStatusModel())->where('clearance_status', 'cleared')->countAllResults(),
             'conversionEligibleCount' => (new AdmissionConversionEligibilityMarkerModel())->countAllResults(),
             'pendingOutboxCount' => (new AdmissionNotificationOutboxModel())->where('status', 'pending')->countAllResults(),
-            'failedOutboxCount' => (new AdmissionNotificationOutboxModel())->where('status', 'failed')->countAllResults(),
+            'failedOutboxCount' => (new AdmissionNotificationOutboxModel())->whereIn('status', ['retry','dead'])->countAllResults(),
             'setupGaps' => $gaps,
         ];
     }

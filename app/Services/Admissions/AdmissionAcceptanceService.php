@@ -55,7 +55,7 @@ class AdmissionAcceptanceService
         (new ApplicantApplicationModel())->update((int) $offer['applicant_application_id'], ['status' => 'accepted']);
         $this->ensureClearancePlaceholder($offer, 'not_required');
         service('auditLogger')->record('admissions.offer.accepted', ['target_type' => 'admission_offer', 'target_id' => $offer['id'], 'summary' => 'Applicant accepted an admission offer.']);
-        service('admissionNotificationDispatcher')->queue('admissions.offer.accepted', null, ['offer_id' => $offer['id'], 'application_id' => $offer['applicant_application_id']], 'in_app', 'offer-accepted:' . $offer['id']);
+        service('admissionNotificationDispatcher')->queueApplicant('admissions.offer.accepted', (int)$offer['applicant_application_id'], ['offer_id'=>$offer['id']]);
 
         return array_merge($this->offerState((new AdmissionOfferModel())->find((int) $offer['id'])), ['acceptance' => $acceptance]);
     }
@@ -85,7 +85,7 @@ class AdmissionAcceptanceService
         (new AdmissionOfferModel())->update((int) $offer['id'], ['offer_status' => 'declined']);
         (new ApplicantApplicationModel())->update((int) $offer['applicant_application_id'], ['status' => 'declined']);
         service('auditLogger')->record('admissions.offer.declined', ['target_type' => 'admission_offer', 'target_id' => $offer['id'], 'summary' => 'Applicant declined an admission offer.']);
-        service('admissionNotificationDispatcher')->queue('admissions.offer.declined', null, ['offer_id' => $offer['id'], 'application_id' => $offer['applicant_application_id']], 'in_app', 'offer-declined:' . $offer['id']);
+        service('admissionNotificationDispatcher')->queueApplicant('admissions.offer.declined', (int)$offer['applicant_application_id'], ['offer_id'=>$offer['id']]);
 
         return array_merge($this->offerState((new AdmissionOfferModel())->find((int) $offer['id'])), ['acceptance' => $acceptance]);
     }

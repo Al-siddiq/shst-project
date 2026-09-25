@@ -69,7 +69,7 @@ class ApplicationSubmissionService
                 throw new RuntimeException('Application changed during submission; retry safely.');
             }
             $payload = ['application_number' => $applicationNumber, 'application_id' => $application['id'], 'submission_version' => $version];
-            service('admissionNotificationDispatcher')->queue('admissions.application.submitted', $completion['biodata']['email'] ?? null, $payload, 'email', 'application-submitted:' . $application['id'] . ':' . $version);
+            service('admissionNotificationDispatcher')->queueApplicant('admissions.application.submitted', (int)$application['id'], $payload);
             service('auditLogger')->record('admissions.application.submitted', ['target_type' => 'applicant_application', 'target_id' => $application['id'], 'summary' => 'Applicant submitted an immutable application version.', 'metadata' => $payload]);
 
             return $this->submittedResponse((new ApplicantApplicationModel())->find((int) $application['id']), false);

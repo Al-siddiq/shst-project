@@ -40,18 +40,25 @@ class OlevelApplicationService
 
         $examType = strtoupper(trim((string) ($payload['exam_type_code'] ?? '')));
         $year = (int) ($payload['exam_year'] ?? 0);
+        $examNumber = strtoupper(trim((string) ($payload['exam_number'] ?? '')));
         if (! $this->examTypeExists($examType) || $year < 1970 || $year > ((int) date('Y') + 1)) {
             throw new InvalidArgumentException('Provide a valid exam type and year.');
+        }
+        if ($examNumber === '' || preg_match('/^[A-Z0-9\/\-]{5,80}$/', $examNumber) !== 1) {
+            throw new InvalidArgumentException('Provide a valid O\'Level examination number.');
         }
 
         $sittingModel = new ApplicationOlevelSittingModel();
         $sittingId = ! empty($payload['sitting_id']) ? (int) $payload['sitting_id'] : null;
         $sitting = $sittingId !== null ? $sittingModel->where('id', $sittingId)->where('applicant_application_id', $application['id'])->first() : null;
+        if ($sitting === null && $sittingId === null && $sittingModel->where('applicant_application_id', $application['id'])->countAllResults() >= 2) {
+            throw new InvalidArgumentException('A maximum of two O\'Level sittings is supported.');
+        }
         $sittingData = [
             'applicant_application_id' => $application['id'],
             'exam_type_code' => $examType,
             'exam_year' => $year,
-            'exam_number' => strtoupper(trim((string) ($payload['exam_number'] ?? ''))) ?: null,
+            'exam_number' => $examNumber,
             'sitting_label' => trim((string) ($payload['sitting_label'] ?? '')) ?: $examType . ' ' . $year,
         ];
         if ($sitting === null) {

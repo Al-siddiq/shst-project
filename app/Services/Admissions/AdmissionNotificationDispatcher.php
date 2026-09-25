@@ -10,6 +10,20 @@ use RuntimeException;
 /** Records a transactional notification intent; provider delivery happens after commit. */
 class AdmissionNotificationDispatcher
 {
+    /** Queue both required admissions channels for one tenant applicant. */
+    public function queueApplicant(string $eventName, int $applicationId, array $payload): array
+    {
+        $db = db_connect();
+        $profile = $db->table('applicant_applications a')->select('p.user_id,COALESCE(p.email,b.email) AS email',false)
+            ->join('applicant_profiles p', 'p.id=a.applicant_profile_id AND p.tenant_id=a.tenant_id')
+            ->join('application_biodata_drafts b','b.applicant_application_id=a.id AND b.tenant_id=a.tenant_id','left')
+            ->where('a.id', $applicationId)->get()->getRowArray();
+        if ($profile === null || empty($profile['user_id'])) throw new InvalidArgumentException('Notification recipient could not be resolved for the tenant applicant.');
+        $payload = array_merge($payload, ['application_id'=>$applicationId, 'user_id'=>(int)$profile['user_id']]);
+        $ids=['in_app'=>$this->queue($eventName, null, $payload, 'in_app', $eventName . ':in-app:' . $applicationId . ':' . ($payload['submission_version'] ?? $payload['offer_id'] ?? 'current'))];
+        if (! empty($profile['email'])) $ids['email']=$this->queue($eventName, (string)$profile['email'], $payload, 'email', $eventName . ':email:' . $applicationId . ':' . ($payload['submission_version'] ?? $payload['offer_id'] ?? 'current'));
+        return $ids;
+    }
     public function queue(string $eventName, ?string $recipient, array $payload, string $channel = 'email', ?string $idempotencyKey = null): int
     {
         $eventName = trim($eventName);

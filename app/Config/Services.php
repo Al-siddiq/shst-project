@@ -26,6 +26,12 @@ use App\Services\Admissions\ApplicantDocumentService;
 use App\Services\Admissions\ApplicationCompletionService;
 use App\Services\Admissions\ApplicationSubmissionService;
 use App\Services\Admissions\OlevelApplicationService;
+use App\Services\Admissions\DocumentScanService;
+use App\Services\Admissions\NotificationDeliveryService;
+use App\Services\Files\ClamAvScanner;
+use App\Services\Files\MalwareScannerInterface;
+use App\Services\Notifications\CodeIgniterEmailProvider;
+use App\Services\Notifications\EmailProviderInterface;
 use App\Services\LayoutResolver;
 use App\Services\NavigationResolver;
 use App\Services\ThemeResolver;
@@ -58,10 +64,45 @@ use App\Services\Website\WebsiteMenuManagementService;
 use App\Services\Website\WebsiteAuditService;
 use App\Services\Website\WebsiteDashboardService;
 use App\Services\Website\ShowcaseManagementService;
+use App\Services\Website\ScheduledEditorialService;
+use App\Services\Website\WebsiteMediaMaintenanceService;
+use App\Services\Admissions\AdmissionsMaintenanceService;
 use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
 {
+    public static function websiteMediaMaintenance(bool $getShared=true): WebsiteMediaMaintenanceService
+    {
+        if($getShared)return static::getSharedInstance('websiteMediaMaintenance'); return new WebsiteMediaMaintenanceService();
+    }
+    public static function scheduledEditorial(bool $getShared=true): ScheduledEditorialService
+    {
+        if($getShared)return static::getSharedInstance('scheduledEditorial'); return new ScheduledEditorialService();
+    }
+    public static function admissionsMaintenance(bool $getShared=true): AdmissionsMaintenanceService
+    {
+        if($getShared)return static::getSharedInstance('admissionsMaintenance'); return new AdmissionsMaintenanceService();
+    }
+    public static function malwareScanner(bool $getShared=true): MalwareScannerInterface
+    {
+        if($getShared)return static::getSharedInstance('malwareScanner');
+        return new ClamAvScanner();
+    }
+    public static function documentScanner(bool $getShared=true): DocumentScanService
+    {
+        if($getShared)return static::getSharedInstance('documentScanner');
+        return new DocumentScanService(static::malwareScanner());
+    }
+    public static function emailProvider(bool $getShared=true): EmailProviderInterface
+    {
+        if($getShared)return static::getSharedInstance('emailProvider');
+        return new CodeIgniterEmailProvider();
+    }
+    public static function notificationDelivery(bool $getShared=true): NotificationDeliveryService
+    {
+        if($getShared)return static::getSharedInstance('notificationDelivery');
+        return new NotificationDeliveryService(static::emailProvider());
+    }
     public static function tenantAdministration(bool $getShared = true): TenantAdministrationService
     {
         if ($getShared) return static::getSharedInstance('tenantAdministration');

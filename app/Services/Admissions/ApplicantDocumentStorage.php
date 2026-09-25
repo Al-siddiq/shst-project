@@ -6,11 +6,12 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use Config\Admissions;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Services\Files\PrivateDocumentStorageInterface;
 
 /**
  * Keeps applicant documents private below WRITEPATH and validates every write.
  */
-class ApplicantDocumentStorage
+class ApplicantDocumentStorage implements PrivateDocumentStorageInterface
 {
     public function storageRoot(): string
     {
@@ -71,6 +72,29 @@ class ApplicantDocumentStorage
             }
         } catch (InvalidArgumentException) {
             // An already absent staged object is a successful compensation.
+        }
+    }
+
+    /** @return array{storage_path:string,previous_path:string} */
+    public function promoteClean(array $document): array
+    {
+        $source = $this->privateFile($document);
+        $relative = (string) $document['storage_path'];
+        if (! str_starts_with($relative, 'quarantine/')) throw new RuntimeException('Only quarantined documents can be promoted.');
+        $targetRelative = 'private/' . substr($relative, strlen('quarantine/'));
+        $target = $this->storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $targetRelative);
+        if (! is_dir(dirname($target)) && ! mkdir(dirname($target), 0770, true) && ! is_dir(dirname($target))) throw new RuntimeException('Private document directory could not be created.');
+        if (! rename($source, $target)) throw new RuntimeException('Clean document could not be promoted from quarantine.');
+        return ['storage_path' => $targetRelative, 'previous_path' => $relative];
+    }
+
+    public function rollbackPromotion(array $promotion): void
+    {
+        $active = $this->storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $promotion['storage_path']);
+        $quarantine = $this->storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $promotion['previous_path']);
+        if (is_file($active)) {
+            if (! is_dir(dirname($quarantine))) mkdir(dirname($quarantine), 0770, true);
+            @rename($active, $quarantine);
         }
     }
 

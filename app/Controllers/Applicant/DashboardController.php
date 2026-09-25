@@ -21,6 +21,7 @@ class DashboardController extends BaseController
             'openProgrammes' => service('publicAdmissions')->openProgrammes(),
             'activeOffer' => service('admissionDecision')->currentOfferForApplicant(),
             'publishedListEntries' => service('admissionListPublication')->applicantPublishedEntries(),
+            'notifications' => (new \App\Models\Tenant\Admissions\InAppNotificationModel())->where('user_id', service('tenantAccess')->currentUserId())->orderBy('created_at','DESC')->findAll(20),
         ]));
     }
 

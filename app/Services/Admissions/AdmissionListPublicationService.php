@@ -5,6 +5,8 @@ namespace App\Services\Admissions;
 use App\Models\Tenant\Admissions\AdmissionListEntryModel;
 use App\Models\Tenant\Admissions\AdmissionListPublicationModel;
 use App\Models\Tenant\Admissions\AdmissionOfferModel;
+use App\Models\Tenant\Admissions\AdmissionCycleModel;
+use App\Models\Tenant\Admissions\AdmissionProgrammeOpeningModel;
 use App\Models\Tenant\Admissions\ApplicantApplicationModel;
 use App\Models\Tenant\Admissions\ApplicationBiodataDraftModel;
 use App\Models\Tenant\ProgrammeModel;
@@ -21,11 +23,15 @@ class AdmissionListPublicationService
     public function workspace(): array
     {
         $this->assertAuthority('admissions.lists.preview');
+        $openings=(new AdmissionProgrammeOpeningModel())->orderBy('created_at','DESC')->findAll();
+        foreach($openings as &$opening){$programme=(new ProgrammeModel())->find((int)$opening['programme_id']);$opening['programme_name']=$programme['name']??'Unavailable programme';}
 
         return [
             'publications' => (new AdmissionListPublicationModel())->orderBy('created_at', 'DESC')->findAll(50),
             'published' => (new AdmissionListPublicationModel())->where('status', 'published')->orderBy('published_at', 'DESC')->findAll(50),
             'metrics' => $this->metrics(),
+            'cycles' => (new AdmissionCycleModel())->orderBy('name','DESC')->findAll(),
+            'openings' => $openings,
         ];
     }
 
@@ -109,7 +115,8 @@ class AdmissionListPublicationService
         $this->assertAuthority('admissions.lists.preview');
         $publication = $this->publication($publicationId, false);
 
-        return ['publication' => $publication, 'entries' => $this->entries($publicationId), 'safeFields' => self::SAFE_PUBLIC_FIELDS];
+        return ['publication' => $publication, 'entries' => $this->entries($publicationId), 'safeFields' => self::SAFE_PUBLIC_FIELDS,
+            'offers'=>(new AdmissionOfferModel())->whereIn('offer_status',self::ACTIVE_OFFER_STATUSES)->orderBy('issued_at','DESC')->findAll(500)];
     }
 
     public function publish(int $publicationId): int
@@ -136,7 +143,9 @@ class AdmissionListPublicationService
         $now = Time::now()->toDateTimeString();
         (new AdmissionListPublicationModel())->update($publicationId, ['status' => 'published', 'published_at' => $now, 'published_by' => service('tenantAccess')->currentUserId()]);
         service('auditLogger')->record('admissions.list.published', ['target_type' => 'admission_list_publication', 'target_id' => $publicationId, 'summary' => 'Admissions staff published an admission list.', 'metadata' => ['entry_count' => count($entries)]]);
-        service('admissionNotificationDispatcher')->queue('admissions.list.published', null, ['publication_id' => $publicationId, 'entry_count' => count($entries)], 'in_app', 'list-published:' . $publicationId);
+        foreach ($entries as $entry) {
+            service('admissionNotificationDispatcher')->queueApplicant('admissions.list.published', (int)$entry['applicant_application_id'], ['publication_id'=>$publicationId,'entry_count'=>count($entries)]);
+        }
 
         return $publicationId;
     }

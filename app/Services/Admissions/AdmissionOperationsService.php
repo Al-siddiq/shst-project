@@ -47,7 +47,10 @@ class AdmissionOperationsService
         $model->update($outboxId, [
             'status' => 'pending',
             'available_at' => Time::now()->toDateTimeString(),
-            'attempts' => ((int) ($record['attempts'] ?? 0)) + 1,
+            'locked_at' => null,
+            'locked_by' => null,
+            'failed_at' => null,
+            'last_error' => null,
         ]);
         service('auditLogger')->record('admissions.outbox.retry_scheduled', [
             'target_type' => 'admission_notification_outbox',
@@ -62,7 +65,7 @@ class AdmissionOperationsService
     /** @return array<string, int> */
     private function outboxStatusCounts(): array
     {
-        $statuses = ['pending', 'processing', 'sent', 'failed'];
+        $statuses = ['pending', 'processing', 'retry', 'sent', 'dead'];
         $counts = [];
         foreach ($statuses as $status) {
             $counts[$status] = (new AdmissionNotificationOutboxModel())->where('status', $status)->countAllResults();
