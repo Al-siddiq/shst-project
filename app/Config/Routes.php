@@ -196,17 +196,47 @@ $routes->group('platform', ['filter' => 'protectedAuth,platformAccess'], static 
     // Phase 2 platform tenant onboarding skeleton endpoints.
     $routes->get('tenants', 'Platform\\TenantController::index');
     $routes->post('tenants', 'Platform\\TenantController::create', ['filter' => 'csrf,sensitiveRateLimit:10:60']);
+    $routes->get('tenants/(:num)', 'Platform\\TenantController::show/$1');
+    $routes->post('tenants/(:num)', 'Platform\\TenantController::update/$1', ['filter' => 'csrf']);
+    $routes->post('tenants/(:num)/lifecycle', 'Platform\\TenantController::transition/$1', ['filter' => 'csrf,sensitiveRateLimit:10:60']);
+    $routes->post('tenants/(:num)/domains', 'Platform\\TenantController::saveDomain/$1', ['filter' => 'csrf']);
     $routes->get('support', 'Platform\\SupportAccessController::index');
     $routes->post('support/start', 'Platform\\SupportAccessController::start', ['filter' => 'csrf,sensitiveRateLimit:5:60']);
     $routes->post('support/end', 'Platform\\SupportAccessController::end', ['filter' => 'csrf']);
 });
 
-$routes->group('internal', ['filter' => 'protectedAuth'], static function ($routes) {
+$routes->group('internal', ['filter' => 'protectedAuth,tenantContext'], static function ($routes) {
     $routes->get('dashboard', 'Internal\\PortalController::dashboard');
 
     // Tenant context must resolve before accessing tenant-sensitive internals.
     $routes->get('tenant-context', 'Internal\\TenantContextController::show', ['filter' => 'tenantContext:required']);
 });
+
+$routes->group('tenant/admin', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin:authority:school.configuration.manage'], static function ($routes) {
+    $routes->get('/', 'Tenant\\AdministrationController::dashboard');
+    $routes->get('configuration', 'Tenant\\AdministrationController::configuration');
+    $routes->get('branding', 'Tenant\\AdministrationController::branding');
+    $routes->get('domains', 'Tenant\\AdministrationController::domains');
+});
+$routes->group('tenant/admin', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin:authority:school.configuration.manage'], static function ($routes) {
+    $routes->post('configuration/profile', 'Tenant\\AdministrationController::saveProfile');
+    $routes->post('configuration/sessions', 'Tenant\\AdministrationController::createSession');
+    $routes->post('configuration/semesters', 'Tenant\\AdministrationController::createSemester');
+    $routes->post('configuration/levels', 'Tenant\\AdministrationController::createLevel');
+    $routes->post('configuration/departments', 'Tenant\\AdministrationController::createDepartment');
+    $routes->post('configuration/programmes', 'Tenant\\AdministrationController::createProgramme');
+    $routes->post('configuration/courses', 'Tenant\\AdministrationController::createCourse');
+    $routes->post('configuration/programme-courses', 'Tenant\\AdministrationController::mapCourse');
+    $routes->post('branding/theme', 'Tenant\\AdministrationController::saveTheme');
+    $routes->post('branding/departments', 'Tenant\\AdministrationController::saveDepartmentIdentity');
+});
+$routes->group('tenant/admin/access', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin:authority:tenant.access.manage'], static function ($routes) {
+    $routes->get('/', 'Tenant\\AdministrationController::access');
+    $routes->post('authorities', 'Tenant\\AdministrationController::createAuthority', ['filter' => 'csrf']);
+    $routes->post('grants', 'Tenant\\AdministrationController::grantAuthority', ['filter' => 'csrf']);
+    $routes->post('memberships/(:num)/lifecycle', 'Tenant\\AdministrationController::membershipLifecycle/$1', ['filter' => 'csrf,sensitiveRateLimit:20:60']);
+});
+$routes->get('tenant/admin/audit', 'Tenant\\AdministrationController::audit', ['filter' => 'protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin:authority:tenant.access.manage']);
 
 
 $routes->group('tenant/config', ['filter' => 'csrf,protectedAuth,tenantContext:required,tenantAccess:group:tenant_super_admin|tenant_admin:authority:school.configuration.manage'], static function ($routes) {

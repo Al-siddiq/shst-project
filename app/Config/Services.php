@@ -34,7 +34,9 @@ use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
 use App\Services\TenantIdentityService;
 use App\Services\TenantConfigurationService;
+use App\Services\TenantAdministrationService;
 use App\Services\PlatformSupportAccessService;
+use App\Services\PlatformTenantService;
 use App\Services\TransactionalService;
 use App\Services\IdempotencyService;
 use App\Services\TenantRowLock;
@@ -60,6 +62,16 @@ use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
 {
+    public static function tenantAdministration(bool $getShared = true): TenantAdministrationService
+    {
+        if ($getShared) return static::getSharedInstance('tenantAdministration');
+        return new TenantAdministrationService();
+    }
+    public static function platformTenant(bool $getShared = true): PlatformTenantService
+    {
+        if ($getShared) return static::getSharedInstance('platformTenant');
+        return new PlatformTenantService();
+    }
     public static function tenantRowLock(bool $getShared = true): TenantRowLock
     {
         if ($getShared) return static::getSharedInstance('tenantRowLock');
