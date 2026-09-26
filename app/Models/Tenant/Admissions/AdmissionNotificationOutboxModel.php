@@ -12,7 +12,7 @@ class AdmissionNotificationOutboxModel extends TenantScopedModel
     protected $returnType = 'array';
     protected $useSoftDeletes = true;
     protected $useTimestamps = true;
-    protected $allowedFields = ['tenant_id', 'event_name', 'channel', 'recipient', 'payload_json', 'status', 'available_at', 'attempts', 'created_by', 'updated_by'];
+    protected $allowedFields = ['tenant_id', 'event_name', 'channel', 'recipient', 'payload_json', 'idempotency_key', 'status', 'available_at', 'attempts', 'locked_at', 'locked_by', 'last_error', 'failed_at', 'sent_at', 'provider_message_id', 'created_by', 'updated_by'];
     protected $beforeInsert = ['applyTenantInsertMetadata'];
     protected $beforeUpdate = ['applyTenantUpdateMetadata'];
 }

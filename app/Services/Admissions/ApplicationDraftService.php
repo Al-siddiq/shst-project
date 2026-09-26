@@ -23,7 +23,13 @@ class ApplicationDraftService
     /** @return array<string, mixed> */
     public function start(int $programmeOpeningId): array
     {
+        return service('transactional')->run(fn (): array => $this->startMutation($programmeOpeningId));
+    }
+
+    private function startMutation(int $programmeOpeningId): array
+    {
         $profile = $this->profile();
+        service('tenantRowLock')->lock('applicant_profiles', (int) $profile['id']);
         $opening = $this->assertOpenProgramme($programmeOpeningId);
         $model = new ApplicantApplicationModel();
         $existing = $model->where('applicant_profile_id', $profile['id'])->where('admission_cycle_id', $opening['admission_cycle_id'])->where('programme_opening_id', $programmeOpeningId)->first();
@@ -64,10 +70,16 @@ class ApplicationDraftService
     /** @param array<string, mixed> $payload @return array<string, mixed> */
     public function saveBiodata(string $token, array $payload): array
     {
+        return service('transactional')->run(fn (): array => $this->saveBiodataMutation($token, $payload));
+    }
+
+    private function saveBiodataMutation(string $token, array $payload): array
+    {
         $application = service('applicantAccessPolicy')->ownedApplication(service('tenantContextManager')->current(), $token);
         if ($application === null) {
             throw new InvalidArgumentException('Draft application was not found for this applicant.');
         }
+        service('tenantRowLock')->lock('applicant_applications', (int) $application['id']);
         service('admissionCorrectionWindow')->assertApplicantMayEdit($application);
         foreach (['phone_e164', 'next_of_kin_phone_e164', 'guardian_phone_e164'] as $field) {
             if (! empty($payload[$field])) {

@@ -16,11 +16,20 @@ class ApplicantProfileService
     /** @return array<string, mixed> */
     public function ensureProfile(?string $identifier = null): array
     {
+        return service('transactional')->run(fn (): array => $this->ensureProfileMutation($identifier));
+    }
+
+    private function ensureProfileMutation(?string $identifier): array
+    {
         $context = service('tenantContextManager')->current();
         $userId = $this->guard->userId();
         if (! $this->guard->check() || ! $context->isResolved() || $userId === null) {
             throw new InvalidArgumentException('Authenticated applicant and tenant context are required.');
         }
+        if ($this->guard->isPlatformAdministrator()) {
+            throw new InvalidArgumentException('Platform administrator identities cannot become applicants.');
+        }
+        service('tenantIdentity')->bindUser($userId, $context, 'Applicant');
 
         $model = new ApplicantProfileModel();
         $profile = $model->where('user_id', $userId)->first();

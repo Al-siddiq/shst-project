@@ -34,7 +34,7 @@ trait AdmissionContextHelper
     {
         // IdentityGuard retains this session fallback for isolated repository
         // tests while production authentication is delegated to Shield.
-        session()->set('user_id', $userId);
+        session()->set(['user_id' => $userId, 'auth_groups' => ['applicant']]);
     }
 
     protected function createApplicantContext(int $userId, array $overrides = []): int
@@ -47,6 +47,7 @@ trait AdmissionContextHelper
     protected function createStaffContext(int $tenantId, int $userId): int
     {
         $this->authenticateAdmissionUser($userId);
+        session()->set('auth_groups', ['lecturer']);
 
         return (int) (new TenantMembershipModel())->insert([
             'tenant_id' => $tenantId,

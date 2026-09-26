@@ -66,6 +66,12 @@ class AdmissionReviewService
 
     public function reviewApplication(int $applicationId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->reviewApplicationMutation($applicationId, $payload));
+    }
+
+    private function reviewApplicationMutation(int $applicationId, array $payload): int
+    {
+        service('tenantRowLock')->lock('applicant_applications', $applicationId);
         $this->assertAuthority('admissions.applications.review');
         $application = $this->application($applicationId);
         $reviewStatus = (string) ($payload['review_status'] ?? 'in_review');
@@ -95,16 +101,28 @@ class AdmissionReviewService
 
         (new ApplicantApplicationModel())->update($applicationId, ['status' => $this->applicationStatusForReview($reviewStatus), 'last_saved_at' => $now->toDateTimeString()]);
         service('auditLogger')->record('admissions.application.reviewed', ['target_type' => 'applicant_application', 'target_id' => $application['id'], 'summary' => 'Admissions staff updated application review status.', 'metadata' => ['review_status' => $reviewStatus, 'correction_allowed_until' => $correctionUntil]]);
+        if ($reviewStatus === 'correction_requested') {
+            service('admissionNotificationDispatcher')->queueApplicant('admissions.application.correction_requested', $applicationId, ['review_id'=>$id,'correction_allowed_until'=>$correctionUntil,'message'=>trim((string)$payload['public_correction_message'])]);
+        }
 
         return $id;
     }
 
     public function reviewDocument(int $documentId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->reviewDocumentMutation($documentId, $payload));
+    }
+
+    private function reviewDocumentMutation(int $documentId, array $payload): int
+    {
+        service('tenantRowLock')->lock('application_documents', $documentId);
         $this->assertAuthority('admissions.documents.review');
         $document = (new ApplicationDocumentModel())->find($documentId);
         if ($document === null || empty($document['application_id'])) {
             throw new InvalidArgumentException('Applicant document was not found for this tenant.');
+        }
+        if (($document['storage_state']??'')!=='active'||($document['scan_status']??'')!=='clean') {
+            throw new InvalidArgumentException('Only clean, activated applicant documents can be reviewed.');
         }
         $decision = (string) ($payload['decision'] ?? '');
         if (! in_array($decision, self::DOCUMENT_DECISIONS, true)) {
@@ -129,6 +147,12 @@ class AdmissionReviewService
 
     public function recordScreening(int $applicationId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->recordScreeningMutation($applicationId, $payload));
+    }
+
+    private function recordScreeningMutation(int $applicationId, array $payload): int
+    {
+        service('tenantRowLock')->lock('applicant_applications', $applicationId);
         $this->assertAuthority('admissions.screening.manage');
         $application = $this->application($applicationId);
         $outcome = (string) ($payload['outcome'] ?? 'pending');

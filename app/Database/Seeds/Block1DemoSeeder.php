@@ -8,7 +8,7 @@ use CodeIgniter\Database\Seeder;
 class Block1DemoSeeder extends Seeder
 {
     /**
-     * Demo actor IDs used by tenant memberships, IAM groups, and authority grants.
+     * Demo actor IDs used by tenant memberships and authority grants.
      *
      * These IDs intentionally do not create auth users because Shield owns identity
      * tables. In a local Shield-enabled setup, create/match users with these IDs
@@ -149,17 +149,7 @@ class Block1DemoSeeder extends Seeder
                 'status' => 'active',
                 'membership_label' => $label,
                 'is_active' => 1,
-                'is_default' => in_array($group, ['tenant_admin', 'tenant_super_admin'], true) ? 1 : 0,
-            ] + $this->timestamps());
-
-            $this->findOrInsert('tenant_iam_group_assignments', [
-                'tenant_id' => $tenantId,
-                'user_id' => $userId,
-                'group_name' => $group,
-            ], [
-                'tenant_id' => $tenantId,
-                'user_id' => $userId,
-                'group_name' => $group,
+                'is_default' => 0,
             ] + $this->timestamps());
         }
     }

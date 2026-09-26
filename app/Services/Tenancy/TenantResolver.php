@@ -3,6 +3,7 @@
 namespace App\Services\Tenancy;
 
 use App\Entities\TenantContext;
+use App\Libraries\Auth\IdentityGuard;
 use App\Models\TenantDomainModel;
 use App\Models\TenantMembershipModel;
 use App\Models\TenantModel;
@@ -48,13 +49,13 @@ class TenantResolver
             }
         }
 
-        // Priority 4: Authenticated user's default active membership
-        $userId = (int) session('user_id');
-        if ($userId > 0) {
+        // Priority 4: authenticated users have exactly one permanent membership.
+        $userId = (new IdentityGuard())->userId();
+        if ($userId !== null) {
             $membership = (new TenantMembershipModel())
                 ->where('user_id', $userId)
                 ->where('is_active', 1)
-                ->orderBy('is_default', 'DESC')
+                ->where('status', 'active')
                 ->first();
 
             if ($membership !== null) {

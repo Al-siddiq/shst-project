@@ -26,12 +26,26 @@ use App\Services\Admissions\ApplicantDocumentService;
 use App\Services\Admissions\ApplicationCompletionService;
 use App\Services\Admissions\ApplicationSubmissionService;
 use App\Services\Admissions\OlevelApplicationService;
+use App\Services\Admissions\DocumentScanService;
+use App\Services\Admissions\NotificationDeliveryService;
+use App\Services\Files\ClamAvScanner;
+use App\Services\Files\MalwareScannerInterface;
+use App\Services\Notifications\CodeIgniterEmailProvider;
+use App\Services\Notifications\EmailProviderInterface;
 use App\Services\LayoutResolver;
 use App\Services\NavigationResolver;
 use App\Services\ThemeResolver;
 use App\Services\Tenancy\TenantContextManager;
 use App\Services\Tenancy\TenantResolver;
 use App\Services\TenantAccessService;
+use App\Services\TenantIdentityService;
+use App\Services\TenantConfigurationService;
+use App\Services\TenantAdministrationService;
+use App\Services\PlatformSupportAccessService;
+use App\Services\PlatformTenantService;
+use App\Services\TransactionalService;
+use App\Services\IdempotencyService;
+use App\Services\TenantRowLock;
 use App\Services\Website\MediaService;
 use App\Services\Website\InstitutionalShowcaseManagementService;
 use App\Services\Website\PublicInstitutionalShowcaseService;
@@ -50,10 +64,96 @@ use App\Services\Website\WebsiteMenuManagementService;
 use App\Services\Website\WebsiteAuditService;
 use App\Services\Website\WebsiteDashboardService;
 use App\Services\Website\ShowcaseManagementService;
+use App\Services\Website\ScheduledEditorialService;
+use App\Services\Website\WebsiteMediaMaintenanceService;
+use App\Services\Admissions\AdmissionsMaintenanceService;
 use CodeIgniter\Config\BaseService;
 
 class Services extends BaseService
 {
+    public static function websiteMediaMaintenance(bool $getShared=true): WebsiteMediaMaintenanceService
+    {
+        if($getShared)return static::getSharedInstance('websiteMediaMaintenance'); return new WebsiteMediaMaintenanceService();
+    }
+    public static function scheduledEditorial(bool $getShared=true): ScheduledEditorialService
+    {
+        if($getShared)return static::getSharedInstance('scheduledEditorial'); return new ScheduledEditorialService();
+    }
+    public static function admissionsMaintenance(bool $getShared=true): AdmissionsMaintenanceService
+    {
+        if($getShared)return static::getSharedInstance('admissionsMaintenance'); return new AdmissionsMaintenanceService();
+    }
+    public static function malwareScanner(bool $getShared=true): MalwareScannerInterface
+    {
+        if($getShared)return static::getSharedInstance('malwareScanner');
+        return new ClamAvScanner();
+    }
+    public static function documentScanner(bool $getShared=true): DocumentScanService
+    {
+        if($getShared)return static::getSharedInstance('documentScanner');
+        return new DocumentScanService(static::malwareScanner());
+    }
+    public static function emailProvider(bool $getShared=true): EmailProviderInterface
+    {
+        if($getShared)return static::getSharedInstance('emailProvider');
+        return new CodeIgniterEmailProvider();
+    }
+    public static function notificationDelivery(bool $getShared=true): NotificationDeliveryService
+    {
+        if($getShared)return static::getSharedInstance('notificationDelivery');
+        return new NotificationDeliveryService(static::emailProvider());
+    }
+    public static function tenantAdministration(bool $getShared = true): TenantAdministrationService
+    {
+        if ($getShared) return static::getSharedInstance('tenantAdministration');
+        return new TenantAdministrationService();
+    }
+    public static function platformTenant(bool $getShared = true): PlatformTenantService
+    {
+        if ($getShared) return static::getSharedInstance('platformTenant');
+        return new PlatformTenantService();
+    }
+    public static function tenantRowLock(bool $getShared = true): TenantRowLock
+    {
+        if ($getShared) return static::getSharedInstance('tenantRowLock');
+        return new TenantRowLock();
+    }
+    public static function idempotency(bool $getShared = true): IdempotencyService
+    {
+        if ($getShared) return static::getSharedInstance('idempotency');
+        return new IdempotencyService();
+    }
+    public static function tenantConfiguration(bool $getShared = true): TenantConfigurationService
+    {
+        if ($getShared) return static::getSharedInstance('tenantConfiguration');
+        return new TenantConfigurationService();
+    }
+    public static function transactional(bool $getShared = true): TransactionalService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('transactional');
+        }
+
+        return new TransactionalService();
+    }
+    public static function tenantIdentity(bool $getShared = true): TenantIdentityService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('tenantIdentity');
+        }
+
+        return new TenantIdentityService();
+    }
+
+    public static function platformSupportAccess(bool $getShared = true): PlatformSupportAccessService
+    {
+        if ($getShared) {
+            return static::getSharedInstance('platformSupportAccess');
+        }
+
+        return new PlatformSupportAccessService();
+    }
+
     public static function tenantResolver(bool $getShared = true): TenantResolver
     {
         if ($getShared) {

@@ -27,6 +27,14 @@ class ApplicantAccessPolicy
         if (! $this->guard->check() || ! $context->isResolved() || $userId === null) {
             return null;
         }
+        if (! $this->guard->inGroup('applicant')) {
+            return null;
+        }
+        try {
+            service('tenantIdentity')->assertContextMatchesCurrentUser($context);
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
 
         return (new ApplicantProfileModel())
             ->where('user_id', $userId)

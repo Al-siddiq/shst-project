@@ -62,6 +62,10 @@ PHP version 8.2 or higher is required, with the following extensions installed:
 > - If you are still using below PHP 8.2, you should upgrade immediately.
 > - The end of life date for PHP 8.2 will be December 31, 2026.
 
+The production database contract is **MySQL 8.4 LTS, InnoDB, utf8mb4**, using
+`READ COMMITTED` by default. Pin the supported 8.4 maintenance release in the
+deployment environment. SQLite is used only by lightweight development tests.
+
 Additionally, make sure that the following extensions are enabled in your PHP:
 
 - json (enabled by default - don't turn it off)
@@ -85,11 +89,12 @@ This repository now includes the Block 1 Phase 1 security baseline:
 
 ### Notes for deployment
 
-In restricted environments where Packagist is not reachable, Shield package installation may fail. Once network access is available, install Shield and complete package setup:
+Shield is declared and locked as an application dependency. Install the locked
+Composer dependencies and run Shield plus application migrations:
 
 ```bash
-composer require codeigniter4/shield
-php spark shield:setup
+composer install
+php spark migrate --all
 ```
 
 ### Block 1 Demo Seed Data
@@ -100,7 +105,7 @@ After running the Block 1 migrations, load a controlled demo dataset for full Bl
 php spark db:seed Block1DemoSeeder
 ```
 
-The seeder creates two tenants (`demo-sht-lagos` and `sample-chs-kano`) with tenant domains, tenant profiles, academic sessions, semesters, levels, departments, programmes, courses, programme-course mappings, memberships, IAM group assignments, operational authorities, authority grants, tenant themes, department identities, and audit log entries.
+The seeder creates two tenants (`demo-sht-lagos` and `sample-chs-kano`) with tenant domains, tenant profiles, academic sessions, semesters, levels, departments, programmes, courses, programme-course mappings, memberships, operational authorities, authority grants, tenant themes, department identities, and audit log entries. It does not write the retired tenant IAM broad-group table.
 
 Demo actor IDs used by the seed data:
 
@@ -110,4 +115,7 @@ Demo actor IDs used by the seed data:
 - `4` — student placeholder for `demo-sht-lagos`
 - `5` — tenant admin for `sample-chs-kano`
 
-CodeIgniter Shield owns real authentication identities. In a Shield-enabled environment, create matching test users or update the seeded membership `user_id` values to match your local Shield users before testing protected login flows end-to-end.
+CodeIgniter Shield owns authentication identities and broad identity groups.
+Normal accounts are permanently bound to exactly one tenant; applicants also
+receive tenant membership, while membership alone grants no staff authority.
+Create matching Shield users and primary groups before using demo membership IDs.

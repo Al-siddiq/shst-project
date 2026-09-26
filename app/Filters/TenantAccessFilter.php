@@ -8,6 +8,8 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class TenantAccessFilter implements FilterInterface
 {
+    private const TENANT_GROUPS = ['tenant_super_admin', 'tenant_admin', 'lecturer', 'student', 'applicant'];
+
     public function before(RequestInterface $request, $arguments = null)
     {
         $context = service('tenantContextManager')->current();
@@ -22,6 +24,10 @@ class TenantAccessFilter implements FilterInterface
                     'data' => [],
                     'errors' => ['membership' => 'You are not an active member of this tenant.'],
                 ]);
+        }
+
+        if (array_intersect(self::TENANT_GROUPS, $access->groups($context)) === []) {
+            return $this->deny('A tenant identity group is required.', 'group');
         }
 
         $requirements = $this->parseRequirements($arguments ?? []);

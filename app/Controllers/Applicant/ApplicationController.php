@@ -30,7 +30,8 @@ class ApplicationController extends BaseController
     public function show(string $token): string
     {
         $application = service('applicationDraft')->resume($token);
-        return view('applicant/application', array_merge(service('publicWebsite')->page('apply', 'Draft application'), ['application' => $application, 'olevel' => service('olevelApplication')->forApplication((int) $application['id']), 'documents' => service('applicantDocument')->documentsForApplication((int) $application['id']), 'completion' => service('applicationCompletion')->evaluate($application)]));
+        $requirements=(new \App\Models\Tenant\Admissions\AdmissionDocumentRequirementModel())->where('admission_cycle_id',$application['admission_cycle_id'])->where('programme_opening_id',$application['programme_opening_id'])->where('status','active')->orderBy('sort_order')->findAll();
+        return view('applicant/application', array_merge(service('publicWebsite')->page('apply', 'Draft application'), ['application' => $application, 'olevel' => service('olevelApplication')->forApplication((int) $application['id']), 'documents' => service('applicantDocument')->documentsForApplication((int) $application['id']), 'documentRequirements'=>$requirements, 'completion' => service('applicationCompletion')->evaluate($application)]));
     }
 
     public function saveBiodata(string $token)
@@ -46,7 +47,7 @@ class ApplicationController extends BaseController
             return $this->failure(['biodata' => $exception->getMessage()]);
         }
 
-        return $this->wantsJson() ? $this->ok('Biodata draft saved.', ['completion_percent' => $draft['biodata']['completion_percent'] ?? 0]) : redirect()->back()->with('message', 'Biodata draft saved.');
+        return $this->wantsJson() ? $this->ok('Biodata draft saved.', ['completion_percent' => $draft['biodata']['completion_percent'] ?? 0])->setHeader('X-CSRF-Token', csrf_hash()) : redirect()->back()->with('message', 'Biodata draft saved.');
     }
 
     public function saveOlevel(string $token)

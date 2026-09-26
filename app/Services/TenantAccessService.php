@@ -6,11 +6,13 @@ use App\Entities\TenantContext;
 use App\Libraries\Auth\IdentityGuard;
 use App\Models\MembershipAuthorityModel;
 use App\Models\OperationalAuthorityModel;
-use App\Models\TenantIamGroupAssignmentModel;
 use App\Models\TenantMembershipModel;
 
 class TenantAccessService
 {
+    /** @var list<string> */
+    private const STAFF_GROUPS = ['tenant_super_admin', 'tenant_admin', 'lecturer'];
+
     public function __construct(private readonly IdentityGuard $guard = new IdentityGuard())
     {
     }
@@ -43,15 +45,12 @@ class TenantAccessService
     public function groups(TenantContext $context, ?int $userId = null): array
     {
         $userId ??= $this->currentUserId();
-        if (! $context->isResolved() || $userId === null) {
+        if (! $context->isResolved() || $userId === null || $userId !== $this->currentUserId()
+            || $this->activeMembership($context, $userId) === null) {
             return [];
         }
 
-        $records = (new TenantIamGroupAssignmentModel())
-            ->where('user_id', $userId)
-            ->findAll();
-
-        return array_values(array_map(static fn (array $row): string => $row['group_name'], $records));
+        return $this->guard->groups();
     }
 
     public function hasGroup(TenantContext $context, string $group, ?int $userId = null): bool
@@ -62,7 +61,7 @@ class TenantAccessService
     public function authorities(TenantContext $context, ?int $userId = null): array
     {
         $userId ??= $this->currentUserId();
-        if (! $context->isResolved() || $userId === null) {
+        if (! $context->isResolved() || $userId === null || $this->activeMembership($context, $userId) === null) {
             return [];
         }
 
@@ -81,6 +80,7 @@ class TenantAccessService
 
     public function hasAuthority(TenantContext $context, string $authority, ?int $userId = null): bool
     {
-        return in_array($authority, $this->authorities($context, $userId), true);
+        return array_intersect(self::STAFF_GROUPS, $this->groups($context, $userId)) !== []
+            && in_array($authority, $this->authorities($context, $userId), true);
     }
 }
