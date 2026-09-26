@@ -15,6 +15,7 @@
             left: 50%;
             margin-left: -73px;
         }
+        * { box-sizing: border-box; }
         body {
             height: 100%;
             background: #fafafa;
@@ -64,7 +65,7 @@
         a:active,
         a:link,
         a:visited {
-            color: #dd4814;
+            color: #075985;
         }
     </style>
 </head>
@@ -78,7 +79,7 @@
             <?php else : ?>
                 <?= lang('Errors.sorryCannotFind') ?>
             <?php endif; ?>
-        </p>
+        </p><p><a href="/">Return to the home page</a></p>
     </div>
 </body>
 </html>
