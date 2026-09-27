@@ -36,6 +36,11 @@ class AdmissionDecisionService
 
     public function createBatch(array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->createBatchMutation($payload));
+    }
+
+    private function createBatchMutation(array $payload): int
+    {
         $this->assertAuthority('admissions.shortlist.manage');
         $type = (string) ($payload['batch_type'] ?? 'shortlist');
         if (! in_array($type, self::BATCH_TYPES, true)) {
@@ -58,6 +63,13 @@ class AdmissionDecisionService
 
     public function addToBatch(int $batchId, int $applicationId, array $payload = []): int
     {
+        return service('transactional')->run(fn (): int => $this->addToBatchMutation($batchId, $applicationId, $payload));
+    }
+
+    private function addToBatchMutation(int $batchId, int $applicationId, array $payload): int
+    {
+        service('tenantRowLock')->lock('admission_shortlist_batches', $batchId);
+        service('tenantRowLock')->lock('applicant_applications', $applicationId);
         $this->assertAuthority('admissions.shortlist.manage');
         $batch = (new AdmissionShortlistBatchModel())->find($batchId);
         $application = $this->application($applicationId);
@@ -90,6 +102,12 @@ class AdmissionDecisionService
 
     public function decide(int $applicationId, array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->decideMutation($applicationId, $payload));
+    }
+
+    private function decideMutation(int $applicationId, array $payload): int
+    {
+        service('tenantRowLock')->lock('applicant_applications', $applicationId);
         $this->assertAuthority('admissions.decisions.manage');
         $application = $this->application($applicationId);
         $decisionType = (string) ($payload['decision_type'] ?? '');
@@ -126,13 +144,19 @@ class AdmissionDecisionService
         if ($decisionType === 'offered' && $status === 'approved') {
             $this->issueOffer($decisionId, $application, $payload);
         }
-        service('admissionNotificationDispatcher')->queue('admissions.decision.recorded', null, ['application_id' => $applicationId, 'decision_type' => $decisionType, 'decision_status' => $status]);
+        service('admissionNotificationDispatcher')->queueApplicant('admissions.decision.recorded', $applicationId, ['decision_id'=>$decisionId, 'decision_type'=>$decisionType, 'decision_status'=>$status]);
 
         return $decisionId;
     }
 
     public function approveDecision(int $decisionId, array $payload = []): int
     {
+        return service('transactional')->run(fn (): int => $this->approveDecisionMutation($decisionId, $payload));
+    }
+
+    private function approveDecisionMutation(int $decisionId, array $payload): int
+    {
+        service('tenantRowLock')->lock('admission_decisions', $decisionId);
         $this->assertAuthority('admissions.decisions.approve');
         $decision = (new AdmissionDecisionModel())->find($decisionId);
         if ($decision === null || $decision['decision_type'] !== 'offered') {
@@ -211,7 +235,7 @@ class AdmissionDecisionService
             'expires_at' => $expiresAt,
         ], true);
         service('auditLogger')->record('admissions.offer.issued', ['target_type' => 'admission_offer', 'target_id' => $offerId, 'summary' => 'Admissions staff issued an admission offer.', 'metadata' => ['offer_reference' => $reference]]);
-        service('admissionNotificationDispatcher')->queue('admissions.offer.issued', null, ['application_id' => $application['id'], 'offer_reference' => $reference]);
+        service('admissionNotificationDispatcher')->queueApplicant('admissions.offer.issued', (int)$application['id'], ['offer_id'=>$offerId, 'offer_reference'=>$reference]);
 
         return $offerId;
     }

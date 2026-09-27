@@ -22,7 +22,7 @@ class AuthController extends BaseController
         $guard = new IdentityGuard();
 
         return $this->ok('Identifier policy evaluated.', [
-            'identifier' => $identifier,
+            'identifier_type' => $guard->identifierType($identifier),
             'allowed' => $guard->identifierAllowed($identifier),
         ]);
     }

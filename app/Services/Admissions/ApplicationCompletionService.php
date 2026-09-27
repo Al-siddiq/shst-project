@@ -54,6 +54,11 @@ class ApplicationCompletionService
                 $missing[] = 'Document: ' . $requirement['label'] . ' is required.';
             }
         }
+        foreach ($uploaded as $document) {
+            if (($document['storage_state'] ?? 'legacy_unverified') !== 'active' || ($document['scan_status'] ?? 'not_scanned') !== 'clean') {
+                $missing[] = 'Document: ' . $document['document_type'] . ' has not passed security scanning.';
+            }
+        }
         if ($requiredDocs === []) {
             $warnings[] = 'No required document has been configured for this programme.';
         }

@@ -54,6 +54,11 @@ class AdmissionConfigurationService
     /** @param array<string, mixed> $payload */
     public function saveCycle(array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->saveCycleMutation($payload));
+    }
+
+    private function saveCycleMutation(array $payload): int
+    {
         $this->assertAuthority('admissions.cycles.manage');
         $session = (new AcademicSessionModel())->find((int) $payload['academic_session_id']);
         if ($session === null || ($session['status'] ?? 'active') !== 'active') {
@@ -88,6 +93,11 @@ class AdmissionConfigurationService
 
     public function transitionCycle(int $id, string $status): void
     {
+        service('transactional')->run(function () use ($id, $status): array { $this->transitionCycleMutation($id, $status); return []; });
+    }
+
+    private function transitionCycleMutation(int $id, string $status): void
+    {
         $this->assertAuthority('admissions.cycles.manage');
         $cycle = $this->cycle($id);
         $this->assertOption($status, self::CYCLE_STATUSES, 'Unsupported admission cycle status.');
@@ -99,6 +109,11 @@ class AdmissionConfigurationService
 
     /** @param array<string, mixed> $payload */
     public function saveProgrammeOpening(array $payload): int
+    {
+        return service('transactional')->run(fn (): int => $this->saveProgrammeOpeningMutation($payload));
+    }
+
+    private function saveProgrammeOpeningMutation(array $payload): int
     {
         $this->assertAuthority('admissions.programmes.manage');
         $cycle = $this->cycle((int) $payload['admission_cycle_id']);
@@ -140,6 +155,11 @@ class AdmissionConfigurationService
     /** @param array<string, mixed> $payload */
     public function saveRequirement(array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->saveRequirementMutation($payload));
+    }
+
+    private function saveRequirementMutation(array $payload): int
+    {
         $this->assertAuthority('admissions.requirements.manage');
         $this->assertRequirementScope($payload);
         $this->assertOption((string) $payload['requirement_type'], self::REQUIREMENT_TYPES, 'Unsupported requirement type.');
@@ -167,6 +187,11 @@ class AdmissionConfigurationService
     /** @param array<string, mixed> $payload */
     public function saveSubjectRequirement(array $payload): int
     {
+        return service('transactional')->run(fn (): int => $this->saveSubjectRequirementMutation($payload));
+    }
+
+    private function saveSubjectRequirementMutation(array $payload): int
+    {
         $this->assertAuthority('admissions.requirements.manage');
         $this->assertRequirementScope($payload);
         $payload['status'] = $payload['status'] ?? 'active';
@@ -186,6 +211,11 @@ class AdmissionConfigurationService
 
     /** @param array<string, mixed> $payload */
     public function saveDocumentRequirement(array $payload): int
+    {
+        return service('transactional')->run(fn (): int => $this->saveDocumentRequirementMutation($payload));
+    }
+
+    private function saveDocumentRequirementMutation(array $payload): int
     {
         $this->assertAuthority('admissions.requirements.manage');
         $this->assertRequirementScope($payload);

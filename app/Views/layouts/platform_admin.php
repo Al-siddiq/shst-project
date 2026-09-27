@@ -1,7 +1,2 @@
-<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><title>Platform Admin</title></head>
-<body data-layout="platform-admin">
-    <main><?= $this->renderSection('content') ?></main>
-</body>
-</html>
+<?php $path='/'.trim(service('request')->getUri()->getPath(),'/'); ?>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title><?= esc($title??'Platform Administration') ?></title><link rel="stylesheet" href="<?= base_url('assets/css/application-ui.css') ?>"></head><body data-layout="platform-admin"><a class="skip-link" href="#platform-content">Skip to content</a><header class="app-header"><div class="app-header__inner"><a class="app-brand" href="<?= site_url('platform/tenants') ?>">Platform administration</a><span class="app-context">Privileged operations</span><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="platform-navigation" data-app-nav-toggle>Menu</button><nav id="platform-navigation" class="app-nav" aria-label="Platform administration" data-app-nav><a href="<?= site_url('platform/tenants') ?>"<?= str_starts_with($path,'/platform/tenants')?' aria-current="page"':'' ?>>Schools</a><a href="<?= site_url('platform/support') ?>"<?= str_starts_with($path,'/platform/support')?' aria-current="page"':'' ?>>Support access</a></nav></div></header><main id="platform-content" class="platform-main" tabindex="-1"><?= $this->renderSection('content') ?></main><script src="<?= base_url('assets/js/application-ui.js') ?>" defer></script></body></html>

@@ -23,6 +23,12 @@ class Admissions extends BaseConfig
 
     public string $documentStorageDirectory = 'uploads/admissions';
 
+    /** Replaceable malware scanner command; production may point to clamdscan. */
+    public string $malwareScannerBinary = 'clamdscan';
+    public int $malwareScannerTimeoutSeconds = 60;
+    public int $notificationMaxAttempts = 5;
+    public int $notificationRetryBaseSeconds = 60;
+
     /** Prefix is neutral; tenants may configure display patterns in Phase 1. */
     public string $applicationReferencePrefix = 'APP';
 

@@ -54,7 +54,7 @@ class CreatePublicWebsiteCoreTables extends Migration
         $this->forge->addUniqueKey('tenant_id', 'uq_website_settings_tenant');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('hero_media_id', 'media_files', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->createTable('website_settings', true);
+        $this->forge->createTable('website_settings');
 
         $this->forge->addField([
             'id' => ['type' => 'INT', 'unsigned' => true, 'auto_increment' => true],
@@ -79,7 +79,7 @@ class CreatePublicWebsiteCoreTables extends Migration
         $this->forge->addKey(['tenant_id', 'status', 'is_visible', 'sort_order'], false, false, 'idx_website_menu_public_order');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('parent_id', 'website_menu_items', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->createTable('website_menu_items', true);
+        $this->forge->createTable('website_menu_items');
     }
 
     public function down()

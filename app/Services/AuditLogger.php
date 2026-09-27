@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Libraries\Auth\IdentityGuard;
 use App\Models\AuditLogModel;
 use CodeIgniter\I18n\Time;
+use RuntimeException;
 
 class AuditLogger
 {
@@ -14,7 +15,7 @@ class AuditLogger
         $context = service('tenantContextManager')->current();
         $actorId = (new IdentityGuard())->userId();
 
-        (new AuditLogModel())->insert([
+        $id = (new AuditLogModel())->insert([
             'tenant_id' => $details['tenant_id'] ?? ($context->isResolved() ? $context->tenantId : null),
             'actor_user_id' => $details['actor_user_id'] ?? $actorId,
             'context' => $details['context'] ?? ($context->isResolved() ? 'tenant' : 'platform'),
@@ -26,6 +27,10 @@ class AuditLogger
             'ip_address' => method_exists($request, 'getIPAddress') ? $request->getIPAddress() : null,
             'user_agent' => substr((string) $request->getUserAgent(), 0, 255),
             'created_at' => Time::now()->toDateTimeString(),
-        ]);
+        ], true);
+
+        if (! is_int($id) && ! ctype_digit((string) $id)) {
+            throw new RuntimeException('Mandatory business audit could not be recorded.');
+        }
     }
 }

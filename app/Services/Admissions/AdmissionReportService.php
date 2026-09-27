@@ -68,7 +68,7 @@ class AdmissionReportService
     /** @return array<string, int> */
     public function pipelineCounts(): array
     {
-        $statuses = ['draft', 'submitted', 'under_review', 'correction_requested', 'reviewed', 'screening_pending', 'screened', 'shortlisted', 'waitlisted', 'rejected', 'offered', 'accepted', 'declined', 'eligible_for_student_conversion'];
+        $statuses = ['draft', 'submitted', 'under_review', 'correction_requested', 'reviewed', 'screening_pending', 'screened', 'shortlisted', 'waitlisted', 'rejected', 'offered', 'offer_expired', 'accepted', 'declined', 'eligible_for_student_conversion'];
 
         return $this->countByStatuses(new ApplicantApplicationModel(), 'status', $statuses);
     }
@@ -77,9 +77,9 @@ class AdmissionReportService
     public function decisionCounts(): array
     {
         return [
-            'current_offered_decisions' => (new AdmissionDecisionModel())->where('is_current', 1)->where('decision_type', 'offer')->countAllResults(),
-            'current_waitlisted_decisions' => (new AdmissionDecisionModel())->where('is_current', 1)->where('decision_type', 'waitlist')->countAllResults(),
-            'current_rejected_decisions' => (new AdmissionDecisionModel())->where('is_current', 1)->where('decision_type', 'reject')->countAllResults(),
+            'current_offered_decisions' => (new AdmissionDecisionModel())->where('is_current', 1)->where('decision_type', 'offered')->countAllResults(),
+            'current_waitlisted_decisions' => (new AdmissionDecisionModel())->where('is_current', 1)->where('decision_type', 'waitlisted')->countAllResults(),
+            'current_rejected_decisions' => (new AdmissionDecisionModel())->where('is_current', 1)->where('decision_type', 'rejected')->countAllResults(),
             'pending_approval' => (new AdmissionDecisionModel())->where('decision_status', 'pending_approval')->countAllResults(),
             'issued_offers' => (new AdmissionOfferModel())->where('offer_status', 'issued')->countAllResults(),
             'accepted_offers' => (new AdmissionOfferModel())->where('offer_status', 'accepted')->countAllResults(),
@@ -119,7 +119,7 @@ class AdmissionReportService
             'status' => $row['status'] ?? '',
             'submitted_at' => $row['submitted_at'] ?? '',
             'last_saved_at' => $row['last_saved_at'] ?? '',
-        ], (new ApplicantApplicationModel())->orderBy('updated_at', 'DESC')->findAll(1000));
+        ], (new ApplicantApplicationModel())->orderBy('updated_at', 'DESC')->findAll());
     }
 
     /** @return list<array<string, mixed>> */
@@ -132,7 +132,7 @@ class AdmissionReportService
             'requires_approval' => $row['requires_approval'] ?? '',
             'decided_at' => $row['decided_at'] ?? '',
             'approved_at' => $row['approved_at'] ?? '',
-        ], (new AdmissionDecisionModel())->orderBy('updated_at', 'DESC')->findAll(1000));
+        ], (new AdmissionDecisionModel())->orderBy('updated_at', 'DESC')->findAll());
     }
 
     /** @return list<array<string, mixed>> */
@@ -145,7 +145,7 @@ class AdmissionReportService
             'acceptance_fee_status' => $row['acceptance_fee_status'] ?? '',
             'accepted_at' => $row['accepted_at'] ?? '',
             'declined_at' => $row['declined_at'] ?? '',
-        ], (new AdmissionOfferAcceptanceModel())->orderBy('updated_at', 'DESC')->findAll(1000));
+        ], (new AdmissionOfferAcceptanceModel())->orderBy('updated_at', 'DESC')->findAll());
     }
 
     /** @return list<array<string, mixed>> */
@@ -158,7 +158,7 @@ class AdmissionReportService
             'published_at' => $row['published_at'] ?? '',
             'programme_opening_id' => $row['programme_opening_id'] ?? '',
             'admission_cycle_id' => $row['admission_cycle_id'] ?? '',
-        ], (new AdmissionListPublicationModel())->orderBy('updated_at', 'DESC')->findAll(1000));
+        ], (new AdmissionListPublicationModel())->orderBy('updated_at', 'DESC')->findAll());
     }
 
     /** @param object $model @param list<string> $statuses @return array<string, int> */
@@ -185,13 +185,19 @@ class AdmissionReportService
             fputcsv($stream, ['No records found for this tenant-scoped admissions report.']);
         }
         foreach ($rows as $row) {
-            fputcsv($stream, array_map(static fn ($value): string => (string) $value, $row));
+            fputcsv($stream, array_map([$this, 'csvCell'], $row));
         }
         rewind($stream);
         $content = stream_get_contents($stream);
         fclose($stream);
 
         return $content === false ? '' : $content;
+    }
+
+    private function csvCell(mixed $value): string
+    {
+        $cell=(string)$value;
+        return preg_match('/^[=+\-@]/', ltrim($cell))===1 ? "'".$cell : $cell;
     }
 
     private function assertAuthority(): void

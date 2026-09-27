@@ -29,8 +29,8 @@ class DocumentController extends BaseController
         }
 
         return $this->request->isAJAX()
-            ? $this->ok('Document uploaded.', ['document' => $document])
-            : redirect()->back()->with('message', 'Document uploaded.');
+            ? $this->ok('Document uploaded and queued for security scanning.', ['document' => $document])
+            : redirect()->back()->with('message', 'Document uploaded and queued for security scanning.');
     }
 
     public function download(string $token): DownloadResponse
@@ -44,7 +44,7 @@ class DocumentController extends BaseController
             $document = (new ApplicationDocumentModel())->where('public_token', $token)->first();
         }
 
-        if ($document === null) {
+        if ($document === null || ($document['storage_state'] ?? 'legacy_unverified') !== 'active' || ($document['scan_status'] ?? 'not_scanned') !== 'clean') {
             throw PageNotFoundException::forPageNotFound('Applicant document was not found.');
         }
 

@@ -59,7 +59,7 @@ class CreateWebsiteEditorialContentTable extends Migration
         $this->forge->addForeignKey('related_programme_id', 'programmes', 'id', 'SET NULL', 'CASCADE');
         $this->forge->addForeignKey('academic_session_id', 'academic_sessions', 'id', 'SET NULL', 'CASCADE');
         $this->forge->addForeignKey('semester_id', 'semesters', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->createTable('website_content_items', true);
+        $this->forge->createTable('website_content_items');
     }
 
     public function down()

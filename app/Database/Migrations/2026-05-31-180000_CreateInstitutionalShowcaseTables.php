@@ -22,7 +22,7 @@ class CreateInstitutionalShowcaseTables extends Migration
         $this->forge->addKey(['tenant_id', 'status', 'sort_order'], false, false, 'idx_management_public');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('photo_media_id', 'media_files', 'id', 'CASCADE', 'RESTRICT');
-        $this->forge->createTable('management_profiles', true);
+        $this->forge->createTable('management_profiles');
 
         $this->forge->addField($this->publishableFields([
             'title' => ['type' => 'VARCHAR', 'constraint' => 180],
@@ -37,7 +37,7 @@ class CreateInstitutionalShowcaseTables extends Migration
         $this->forge->addKey(['tenant_id', 'status', 'sort_order'], false, false, 'idx_gallery_album_public');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('cover_media_id', 'media_files', 'id', 'CASCADE', 'RESTRICT');
-        $this->forge->createTable('gallery_albums', true);
+        $this->forge->createTable('gallery_albums');
 
         $this->forge->addField([
             'id' => ['type' => 'INT', 'unsigned' => true, 'auto_increment' => true],
@@ -60,7 +60,7 @@ class CreateInstitutionalShowcaseTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('gallery_album_id', 'gallery_albums', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('media_file_id', 'media_files', 'id', 'CASCADE', 'RESTRICT');
-        $this->forge->createTable('gallery_items', true);
+        $this->forge->createTable('gallery_items');
     }
 
     public function down()

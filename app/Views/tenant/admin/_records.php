@@ -1,0 +1,1 @@
+<?php if (($records ?? []) === []): ?><p class="empty">No records yet.</p><?php else: ?><ul class="record-list"><?php foreach($records as $record): ?><li><strong><?= esc($record[$primary] ?? '') ?></strong><?php if(isset($secondary)): ?> — <?= esc($record[$secondary] ?? '') ?><?php endif ?></li><?php endforeach ?></ul><?php endif ?>
