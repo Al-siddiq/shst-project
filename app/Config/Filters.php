@@ -41,6 +41,7 @@ class Filters extends BaseFilters
         'applicantAccess' => \App\Filters\ApplicantAccessFilter::class,
         'platformAccess' => \App\Filters\PlatformAccessFilter::class,
         'sensitiveRateLimit' => \App\Filters\SensitiveRateLimitFilter::class,
+        'requestTelemetry' => \App\Filters\RequestTelemetryFilter::class,
     ];
 
     /**
@@ -79,13 +80,15 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'requestTelemetry',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
         ],
         'after' => [
             // 'honeypot',
-            // 'secureheaders',
+            'secureheaders',
+            'requestTelemetry',
         ],
     ];
 

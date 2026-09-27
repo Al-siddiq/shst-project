@@ -1,4 +1,16 @@
-# CodeIgniter 4 Application Starter
+# SHST — Multi-tenant School Administration Platform
+
+SHST is a CodeIgniter 4 modular monolith providing a shared-schema SaaS
+foundation, tenant public website/CMS, and admissions lifecycle. Blocks 1–3 are
+under stabilization; Fees/Payments and later academic-record modules are not
+production capabilities and must not be exposed.
+
+The authoritative operational gate is
+[`docs/stabilization/phase_6_release_gate.md`](docs/stabilization/phase_6_release_gate.md).
+Deployment, workers, recovery, monitoring, and incident procedures are defined in
+[`docs/stabilization/phase_6_deployment_operations.md`](docs/stabilization/phase_6_deployment_operations.md).
+Implemented capability and outstanding evidence are tracked in
+[`docs/stabilization/phase_6_capability_status.md`](docs/stabilization/phase_6_capability_status.md).
 
 ## What is CodeIgniter?
 

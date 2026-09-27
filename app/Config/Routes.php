@@ -5,6 +5,9 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
+$routes->get('health/live', 'HealthController::live');
+$routes->get('health/ready', 'HealthController::ready');
+
 // Phase 1 tenant public pages remain server-rendered and lightweight. The
 // context filter runs first; PublicTenantFilter then enforces active launch state.
 $routes->group('', ['filter' => 'tenantContext,publicTenant'], static function ($routes) {
