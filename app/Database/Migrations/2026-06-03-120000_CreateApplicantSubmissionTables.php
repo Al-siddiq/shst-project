@@ -61,15 +61,15 @@ class CreateApplicantSubmissionTables extends Migration
             ['code' => 'PHY', 'label' => 'Physics', 'sort_order' => 50],
         ]);
         $this->db->table('olevel_grades')->insertBatch([
-            ['code' => 'A1', 'label' => 'Excellent', 'rank_value' => 1, 'sort_order' => 10],
-            ['code' => 'B2', 'label' => 'Very Good', 'rank_value' => 2, 'sort_order' => 20],
-            ['code' => 'B3', 'label' => 'Good', 'rank_value' => 3, 'sort_order' => 30],
-            ['code' => 'C4', 'label' => 'Credit', 'rank_value' => 4, 'sort_order' => 40],
-            ['code' => 'C5', 'label' => 'Credit', 'rank_value' => 5, 'sort_order' => 50],
-            ['code' => 'C6', 'label' => 'Credit', 'rank_value' => 6, 'sort_order' => 60],
-            ['code' => 'D7', 'label' => 'Pass', 'rank_value' => 7, 'is_passing' => 0, 'sort_order' => 70],
-            ['code' => 'E8', 'label' => 'Pass', 'rank_value' => 8, 'is_passing' => 0, 'sort_order' => 80],
-            ['code' => 'F9', 'label' => 'Fail', 'rank_value' => 9, 'is_passing' => 0, 'sort_order' => 90],
+            ['code' => 'A1', 'label' => 'Excellent', 'rank_value' => 1, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 10],
+            ['code' => 'B2', 'label' => 'Very Good', 'rank_value' => 2, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 20],
+            ['code' => 'B3', 'label' => 'Good', 'rank_value' => 3, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 30],
+            ['code' => 'C4', 'label' => 'Credit', 'rank_value' => 4, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 40],
+            ['code' => 'C5', 'label' => 'Credit', 'rank_value' => 5, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 50],
+            ['code' => 'C6', 'label' => 'Credit', 'rank_value' => 6, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 60],
+            ['code' => 'D7', 'label' => 'Pass', 'rank_value' => 7, 'is_passing' => 0, 'status' => 'active', 'sort_order' => 70],
+            ['code' => 'E8', 'label' => 'Pass', 'rank_value' => 8, 'is_passing' => 0, 'status' => 'active', 'sort_order' => 80],
+            ['code' => 'F9', 'label' => 'Fail', 'rank_value' => 9, 'is_passing' => 0, 'status' => 'active', 'sort_order' => 90],
         ]);
 
         $this->forge->addField($this->auditedFields([
