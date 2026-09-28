@@ -30,7 +30,7 @@ class CreateTenantAccessControlTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey(['tenant_id', 'user_id', 'group_name'], 'uq_tenant_user_group');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('tenant_iam_group_assignments', true);
+        $this->forge->createTable('tenant_iam_group_assignments');
 
         // Tenant-configured operational authorities such as registrar, HOD, bursar, etc.
         $this->forge->addField([
@@ -49,7 +49,7 @@ class CreateTenantAccessControlTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey(['tenant_id', 'code'], 'uq_tenant_authority_code');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('operational_authorities', true);
+        $this->forge->createTable('operational_authorities');
 
         // Grants operational authorities to tenant members, optionally scoped for later modules.
         $this->forge->addField([
@@ -69,7 +69,7 @@ class CreateTenantAccessControlTables extends Migration
         $this->forge->addUniqueKey(['tenant_id', 'user_id', 'authority_id', 'scope_type', 'scope_id'], 'uq_tenant_authority_grant');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('authority_id', 'operational_authorities', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('membership_authorities', true);
+        $this->forge->createTable('membership_authorities');
     }
 
     public function down()

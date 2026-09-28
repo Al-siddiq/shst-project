@@ -28,7 +28,7 @@ class CreateTenantConfigurationTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey('tenant_id');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('tenant_profiles', true);
+        $this->forge->createTable('tenant_profiles');
 
         $this->createAcademicTable('academic_sessions', [
             'name' => ['type' => 'VARCHAR', 'constraint' => 120],
@@ -100,7 +100,7 @@ class CreateTenantConfigurationTables extends Migration
         $this->forge->addForeignKey('course_id', 'courses', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('level_id', 'levels', 'id', 'SET NULL', 'CASCADE');
         $this->forge->addForeignKey('semester_id', 'semesters', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->createTable('programme_courses', true);
+        $this->forge->createTable('programme_courses');
     }
 
     private function createAcademicTable(string $table, array $fields, array $unique, array $fks = []): void
@@ -124,7 +124,7 @@ class CreateTenantConfigurationTables extends Migration
             $this->forge->addForeignKey($column, $refTable, $refColumn, 'CASCADE', 'CASCADE');
         }
 
-        $this->forge->createTable($table, true);
+        $this->forge->createTable($table);
     }
 
     public function down()

@@ -28,7 +28,7 @@ class CreateAdmissionListPublicationTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_cycle_id', 'admission_cycles', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('programme_opening_id', 'admission_programme_openings', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_list_publications', true);
+        $this->forge->createTable('admission_list_publications');
 
         $this->forge->addField($this->auditedFields([
             'admission_list_publication_id' => ['type' => 'INT', 'unsigned' => true],
@@ -46,7 +46,7 @@ class CreateAdmissionListPublicationTables extends Migration
         $this->forge->addForeignKey('admission_list_publication_id', 'admission_list_publications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_offer_id', 'admission_offers', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_list_entries', true);
+        $this->forge->createTable('admission_list_entries');
     }
 
     public function down()

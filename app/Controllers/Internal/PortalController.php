@@ -3,17 +3,16 @@
 namespace App\Controllers\Internal;
 
 use App\Controllers\BaseController;
-use App\Traits\ApiResponseTrait;
+use App\Libraries\Auth\IdentityGuard;
 
 class PortalController extends BaseController
 {
-    use ApiResponseTrait;
-
     public function dashboard()
     {
-        return $this->ok('Protected portal baseline is active for Block 1 Phase 1.', [
-            'phase' => 'block1-phase1',
-            'authenticated' => true,
-        ]);
+        if ((new IdentityGuard())->isPlatformAdministrator()) {
+            return redirect()->to(site_url('platform/tenants'));
+        }
+
+        return redirect()->to(site_url('tenant/admin'));
     }
 }

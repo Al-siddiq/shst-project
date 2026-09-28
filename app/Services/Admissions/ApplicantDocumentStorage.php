@@ -6,11 +6,12 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use Config\Admissions;
 use InvalidArgumentException;
 use RuntimeException;
+use App\Services\Files\PrivateDocumentStorageInterface;
 
 /**
  * Keeps applicant documents private below WRITEPATH and validates every write.
  */
-class ApplicantDocumentStorage
+class ApplicantDocumentStorage implements PrivateDocumentStorageInterface
 {
     public function storageRoot(): string
     {
@@ -38,7 +39,9 @@ class ApplicantDocumentStorage
         }
 
         $extension = $config->documentExtensionsByMimeType[$mimeType];
-        $directory = 'tenant-' . (int) $application['tenant_id'] . DIRECTORY_SEPARATOR . 'application-' . (int) $application['id'];
+        // New uploads enter a private quarantine namespace. Phase 4's scanner
+        // promotes only clean objects; callers must never serve this path.
+        $directory = 'quarantine' . DIRECTORY_SEPARATOR . 'tenant-' . (int) $application['tenant_id'] . DIRECTORY_SEPARATOR . 'application-' . (int) $application['id'];
         $absoluteDirectory = $this->storageRoot() . DIRECTORY_SEPARATOR . $directory;
         if (! is_dir($absoluteDirectory) && ! mkdir($absoluteDirectory, 0775, true) && ! is_dir($absoluteDirectory)) {
             throw new RuntimeException('Private admission upload directory could not be created.');
@@ -57,6 +60,42 @@ class ApplicantDocumentStorage
             'size_bytes' => $file->getSize(),
             'checksum_sha256' => hash_file('sha256', $absolutePath),
         ];
+    }
+
+    /** Best-effort compensation when metadata cannot be committed. */
+    public function discard(array $stored): void
+    {
+        try {
+            $path = $this->privateFile($stored);
+            if (! unlink($path)) {
+                throw new RuntimeException('Quarantined applicant document could not be removed.');
+            }
+        } catch (InvalidArgumentException) {
+            // An already absent staged object is a successful compensation.
+        }
+    }
+
+    /** @return array{storage_path:string,previous_path:string} */
+    public function promoteClean(array $document): array
+    {
+        $source = $this->privateFile($document);
+        $relative = (string) $document['storage_path'];
+        if (! str_starts_with($relative, 'quarantine/')) throw new RuntimeException('Only quarantined documents can be promoted.');
+        $targetRelative = 'private/' . substr($relative, strlen('quarantine/'));
+        $target = $this->storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $targetRelative);
+        if (! is_dir(dirname($target)) && ! mkdir(dirname($target), 0770, true) && ! is_dir(dirname($target))) throw new RuntimeException('Private document directory could not be created.');
+        if (! rename($source, $target)) throw new RuntimeException('Clean document could not be promoted from quarantine.');
+        return ['storage_path' => $targetRelative, 'previous_path' => $relative];
+    }
+
+    public function rollbackPromotion(array $promotion): void
+    {
+        $active = $this->storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $promotion['storage_path']);
+        $quarantine = $this->storageRoot() . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $promotion['previous_path']);
+        if (is_file($active)) {
+            if (! is_dir(dirname($quarantine))) mkdir(dirname($quarantine), 0770, true);
+            @rename($active, $quarantine);
+        }
     }
 
     /** @param array<string, mixed> $document */

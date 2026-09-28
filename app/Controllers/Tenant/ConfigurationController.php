@@ -3,15 +3,8 @@
 namespace App\Controllers\Tenant;
 
 use App\Controllers\BaseController;
-use App\Models\Tenant\AcademicSessionModel;
-use App\Models\Tenant\CourseModel;
-use App\Models\Tenant\DepartmentModel;
-use App\Models\Tenant\LevelModel;
-use App\Models\Tenant\ProgrammeCourseModel;
-use App\Models\Tenant\ProgrammeModel;
-use App\Models\Tenant\SemesterModel;
-use App\Models\Tenant\TenantProfileModel;
 use App\Traits\ApiResponseTrait;
+use InvalidArgumentException;
 
 class ConfigurationController extends BaseController
 {
@@ -30,24 +23,14 @@ class ConfigurationController extends BaseController
             return $this->fail('Validation failed.', $this->validator->getErrors(), 422);
         }
 
-        $model = new TenantProfileModel();
-        $existing = $model->first();
-
-        if ($existing) {
-            $model->update($existing['id'], $payload);
-            $this->audit('tenant.profile.update', 'tenant_profile', $existing['id']);
-            return $this->ok('Tenant profile updated.', ['id' => $existing['id']]);
-        }
-
-        $id = $model->insert($payload, true);
-        $this->audit('tenant.profile.create', 'tenant_profile', $id);
-        return $this->ok('Tenant profile created.', ['id' => $id], 201);
+        $id = service('tenantConfiguration')->upsertProfile($this->validator->getValidated());
+        return $this->ok('Tenant profile saved.', ['id' => $id]);
     }
 
-    public function createAcademicSession() { return $this->createEntity(new AcademicSessionModel(), ['name' => 'required|max_length[120]']); }
-    public function createSemester() { return $this->createEntity(new SemesterModel(), ['name' => 'required|max_length[120]']); }
-    public function createLevel() { return $this->createEntity(new LevelModel(), ['name' => 'required|max_length[120]']); }
-    public function createDepartment() { return $this->createEntity(new DepartmentModel(), ['name' => 'required|max_length[160]','color_hex'=>'permit_empty|regex_match[/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/]']); }
+    public function createAcademicSession() { return $this->createEntity('academic_session', ['name' => 'required|max_length[120]']); }
+    public function createSemester() { return $this->createEntity('semester', ['name' => 'required|max_length[120]']); }
+    public function createLevel() { return $this->createEntity('level', ['name' => 'required|max_length[120]']); }
+    public function createDepartment() { return $this->createEntity('department', ['name' => 'required|max_length[160]','color_hex'=>'permit_empty|regex_match[/^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/]']); }
 
     public function createProgramme()
     {
@@ -58,13 +41,8 @@ class ConfigurationController extends BaseController
             return $this->fail('Validation failed.', $this->validator->getErrors(), 422);
         }
 
-        // Tenant isolation check: department must exist inside same tenant scope.
-        if ((new DepartmentModel())->find((int) $payload['department_id']) === null) {
-            return $this->fail('Validation failed.', ['department_id' => 'Invalid tenant department reference.'], 422);
-        }
-
-        $id = (new ProgrammeModel())->insert($payload, true);
-        $this->audit('tenant.programme.create', 'programme', $id);
+        try { $id = service('tenantConfiguration')->createProgramme($this->validator->getValidated()); }
+        catch (InvalidArgumentException $e) { return $this->fail('Validation failed.', ['department_id' => $e->getMessage()], 422); }
         return $this->ok('Programme created.', ['id' => $id], 201);
     }
 
@@ -77,12 +55,8 @@ class ConfigurationController extends BaseController
             return $this->fail('Validation failed.', $this->validator->getErrors(), 422);
         }
 
-        if (! empty($payload['department_id']) && (new DepartmentModel())->find((int) $payload['department_id']) === null) {
-            return $this->fail('Validation failed.', ['department_id' => 'Invalid tenant department reference.'], 422);
-        }
-
-        $id = (new CourseModel())->insert($payload, true);
-        $this->audit('tenant.course.create', 'course', $id);
+        try { $id = service('tenantConfiguration')->createCourse($this->validator->getValidated()); }
+        catch (InvalidArgumentException $e) { return $this->fail('Validation failed.', ['department_id' => $e->getMessage()], 422); }
         return $this->ok('Course created.', ['id' => $id], 201);
     }
 
@@ -100,26 +74,12 @@ class ConfigurationController extends BaseController
             return $this->fail('Validation failed.', $this->validator->getErrors(), 422);
         }
 
-        // Tenant-scoped FK checks prevent cross-tenant relationships.
-        if ((new ProgrammeModel())->find((int) $payload['programme_id']) === null) {
-            return $this->fail('Validation failed.', ['programme_id' => 'Invalid tenant programme reference.'], 422);
-        }
-        if ((new CourseModel())->find((int) $payload['course_id']) === null) {
-            return $this->fail('Validation failed.', ['course_id' => 'Invalid tenant course reference.'], 422);
-        }
-        if (! empty($payload['level_id']) && (new LevelModel())->find((int) $payload['level_id']) === null) {
-            return $this->fail('Validation failed.', ['level_id' => 'Invalid tenant level reference.'], 422);
-        }
-        if (! empty($payload['semester_id']) && (new SemesterModel())->find((int) $payload['semester_id']) === null) {
-            return $this->fail('Validation failed.', ['semester_id' => 'Invalid tenant semester reference.'], 422);
-        }
-
-        $id = (new ProgrammeCourseModel())->insert($payload, true);
-        $this->audit('tenant.programme_course.create', 'programme_course', $id);
+        try { $id = service('tenantConfiguration')->mapProgrammeCourse($this->validator->getValidated()); }
+        catch (InvalidArgumentException $e) { return $this->fail('Validation failed.', ['reference' => $e->getMessage()], 422); }
         return $this->ok('Programme course mapping created.', ['id' => $id], 201);
     }
 
-    private function createEntity(object $model, array $rules)
+    private function createEntity(string $type, array $rules)
     {
         $payload = $this->request->getJSON(true) ?? [];
 
@@ -127,17 +87,8 @@ class ConfigurationController extends BaseController
             return $this->fail('Validation failed.', $this->validator->getErrors(), 422);
         }
 
-        $id = $model->insert($payload, true);
-        $this->audit('tenant.configuration.create', $model->getTable(), $id);
+        $id = service('tenantConfiguration')->create($type, $this->validator->getValidated());
 
         return $this->ok('Record created.', ['id' => $id], 201);
-    }
-    private function audit(string $action, string $targetType, int|string $targetId): void
-    {
-        service('auditLogger')->record($action, [
-            'target_type' => $targetType,
-            'target_id' => $targetId,
-            'summary' => 'Tenant configuration changed.',
-        ]);
     }
 }

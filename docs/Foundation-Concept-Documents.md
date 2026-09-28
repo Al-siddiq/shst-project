@@ -88,7 +88,7 @@ Tenant context may be resolved through:
 3. Tenant slug in URL, only where needed
    Example: `/t/schoola/login`
 
-4. Authenticated user tenant membership
+4. Authenticated user's permanent singular tenant membership
 
 ## Tenant Resolution Priority
 
@@ -390,9 +390,15 @@ Example:
 
 A login identifier must not create confusion across tenants.
 
-The system shall support global user identity with tenant membership.
+The system shall use tenant-scoped Shield accounts with permanent singular tenant membership.
 
-That means one user account may belong to one or more tenants where necessary, but operational access must always depend on active tenant context.
+One normal Shield account belongs to exactly one tenant and can never be rebound
+to another tenant. The same normalized human email address or phone number may be
+used by separate, independently credentialed accounts in different tenants, but
+must be unique within one tenant. Tenant login and recovery therefore require the
+resolved tenant plus normalized identifier. Platform administrator identities are
+platform-owned, have no tenant membership, and access tenant information only
+through explicit, short-lived, audited support contexts.
 
 ## Login Flow
 
@@ -403,7 +409,7 @@ The login flow shall be:
 3. Shield authenticates identity.
 4. System checks user status.
 5. System checks tenant membership.
-6. System resolves active tenant.
+6. System verifies that the requested tenant matches the account's singular membership.
 7. System loads first-layer IAM group.
 8. System loads second-layer operational authorities.
 9. System redirects user to the correct layout/dashboard.
@@ -470,10 +476,15 @@ Shield groups remain the identity foundation. Operational authority handles runt
 
 ## Authorization Enforcement Rule
 
-Every protected action must pass both checks:
+Every protected tenant action must pass all applicable checks:
 
 1. **Identity check:** Is the user in the right broad group?
 2. **Operational check:** Does the user have authority for this tenant, department, programme, level, or workflow?
+
+Tenant membership is a separate prerequisite proving which tenant owns the
+account; membership alone grants no staff or administrative authority. Shield is
+the sole runtime source of broad identity groups. Operational responsibilities
+must not be duplicated as a second broad-role system.
 
 CodeIgniter’s security guidance emphasizes authorization checks for administrative functions and API endpoints. This project shall enforce authorization through filters, base controllers, services, and policy checks, not through UI hiding alone. ([codeigniter4.github.io][4])
 

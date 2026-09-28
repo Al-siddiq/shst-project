@@ -31,7 +31,7 @@ class ProtectedAuthFilter implements FilterInterface
                 ]);
         }
 
-        return redirect()->to('/login')->with('error', 'Authentication required.');
+        return redirect()->to(site_url('auth/login'))->with('error', 'Authentication required.');
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)

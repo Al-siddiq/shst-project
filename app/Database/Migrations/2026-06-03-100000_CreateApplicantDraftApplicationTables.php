@@ -29,7 +29,7 @@ class CreateApplicantDraftApplicationTables extends Migration
         $this->forge->addForeignKey('applicant_profile_id', 'applicant_profiles', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_cycle_id', 'admission_cycles', 'id', 'CASCADE', 'RESTRICT');
         $this->forge->addForeignKey('programme_opening_id', 'admission_programme_openings', 'id', 'CASCADE', 'RESTRICT');
-        $this->forge->createTable('applicant_applications', true);
+        $this->forge->createTable('applicant_applications');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -57,7 +57,7 @@ class CreateApplicantDraftApplicationTables extends Migration
         $this->forge->addUniqueKey(['tenant_id', 'applicant_application_id'], 'uq_application_biodata_draft');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('application_biodata_drafts', true);
+        $this->forge->createTable('application_biodata_drafts');
     }
 
     public function down()

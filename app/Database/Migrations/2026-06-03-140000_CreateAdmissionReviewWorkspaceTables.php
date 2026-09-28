@@ -22,7 +22,7 @@ class CreateAdmissionReviewWorkspaceTables extends Migration
         $this->forge->addKey(['tenant_id', 'applicant_application_id', 'review_status'], false, false, 'idx_admission_application_review_status');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_application_reviews', true);
+        $this->forge->createTable('admission_application_reviews');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -38,7 +38,7 @@ class CreateAdmissionReviewWorkspaceTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('application_document_id', 'application_documents', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_document_review_logs', true);
+        $this->forge->createTable('admission_document_review_logs');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -55,7 +55,7 @@ class CreateAdmissionReviewWorkspaceTables extends Migration
         $this->forge->addKey(['tenant_id', 'applicant_application_id', 'outcome'], false, false, 'idx_admission_screening_outcome');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_screening_records', true);
+        $this->forge->createTable('admission_screening_records');
     }
 
     public function down()

@@ -17,7 +17,7 @@ class CreateApplicantSubmissionTables extends Migration
             'submitted_at' => ['type' => 'DATETIME', 'null' => true, 'after' => 'last_saved_at'],
             'submission_snapshot_id' => ['type' => 'INT', 'unsigned' => true, 'null' => true, 'after' => 'submitted_at'],
         ]);
-        $this->db->query('CREATE UNIQUE INDEX uq_applicant_application_number ON applicant_applications (tenant_id, application_number)');
+        $this->db->query('CREATE UNIQUE INDEX uq_applicant_application_number ON ' . $this->db->prefixTable('applicant_applications') . ' (tenant_id, application_number)');
 
         $this->forge->addField([
             'code' => ['type' => 'VARCHAR', 'constraint' => 30],
@@ -26,7 +26,7 @@ class CreateApplicantSubmissionTables extends Migration
             'sort_order' => ['type' => 'INT', 'default' => 0],
         ]);
         $this->forge->addKey('code', true);
-        $this->forge->createTable('olevel_exam_types', true);
+        $this->forge->createTable('olevel_exam_types');
 
         $this->forge->addField([
             'code' => ['type' => 'VARCHAR', 'constraint' => 60],
@@ -35,7 +35,7 @@ class CreateApplicantSubmissionTables extends Migration
             'sort_order' => ['type' => 'INT', 'default' => 0],
         ]);
         $this->forge->addKey('code', true);
-        $this->forge->createTable('olevel_subjects', true);
+        $this->forge->createTable('olevel_subjects');
 
         $this->forge->addField([
             'code' => ['type' => 'VARCHAR', 'constraint' => 20],
@@ -46,7 +46,7 @@ class CreateApplicantSubmissionTables extends Migration
             'sort_order' => ['type' => 'INT', 'default' => 0],
         ]);
         $this->forge->addKey('code', true);
-        $this->forge->createTable('olevel_grades', true);
+        $this->forge->createTable('olevel_grades');
 
         $this->db->table('olevel_exam_types')->insertBatch([
             ['code' => 'WAEC', 'label' => 'WAEC Senior School Certificate Examination', 'sort_order' => 10],
@@ -61,15 +61,15 @@ class CreateApplicantSubmissionTables extends Migration
             ['code' => 'PHY', 'label' => 'Physics', 'sort_order' => 50],
         ]);
         $this->db->table('olevel_grades')->insertBatch([
-            ['code' => 'A1', 'label' => 'Excellent', 'rank_value' => 1, 'sort_order' => 10],
-            ['code' => 'B2', 'label' => 'Very Good', 'rank_value' => 2, 'sort_order' => 20],
-            ['code' => 'B3', 'label' => 'Good', 'rank_value' => 3, 'sort_order' => 30],
-            ['code' => 'C4', 'label' => 'Credit', 'rank_value' => 4, 'sort_order' => 40],
-            ['code' => 'C5', 'label' => 'Credit', 'rank_value' => 5, 'sort_order' => 50],
-            ['code' => 'C6', 'label' => 'Credit', 'rank_value' => 6, 'sort_order' => 60],
-            ['code' => 'D7', 'label' => 'Pass', 'rank_value' => 7, 'is_passing' => 0, 'sort_order' => 70],
-            ['code' => 'E8', 'label' => 'Pass', 'rank_value' => 8, 'is_passing' => 0, 'sort_order' => 80],
-            ['code' => 'F9', 'label' => 'Fail', 'rank_value' => 9, 'is_passing' => 0, 'sort_order' => 90],
+            ['code' => 'A1', 'label' => 'Excellent', 'rank_value' => 1, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 10],
+            ['code' => 'B2', 'label' => 'Very Good', 'rank_value' => 2, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 20],
+            ['code' => 'B3', 'label' => 'Good', 'rank_value' => 3, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 30],
+            ['code' => 'C4', 'label' => 'Credit', 'rank_value' => 4, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 40],
+            ['code' => 'C5', 'label' => 'Credit', 'rank_value' => 5, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 50],
+            ['code' => 'C6', 'label' => 'Credit', 'rank_value' => 6, 'is_passing' => 1, 'status' => 'active', 'sort_order' => 60],
+            ['code' => 'D7', 'label' => 'Pass', 'rank_value' => 7, 'is_passing' => 0, 'status' => 'active', 'sort_order' => 70],
+            ['code' => 'E8', 'label' => 'Pass', 'rank_value' => 8, 'is_passing' => 0, 'status' => 'active', 'sort_order' => 80],
+            ['code' => 'F9', 'label' => 'Fail', 'rank_value' => 9, 'is_passing' => 0, 'status' => 'active', 'sort_order' => 90],
         ]);
 
         $this->forge->addField($this->auditedFields([
@@ -83,7 +83,7 @@ class CreateApplicantSubmissionTables extends Migration
         $this->forge->addKey(['tenant_id', 'applicant_application_id'], false, false, 'idx_olevel_sitting_application');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('application_olevel_sittings', true);
+        $this->forge->createTable('application_olevel_sittings');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -97,7 +97,7 @@ class CreateApplicantSubmissionTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('olevel_sitting_id', 'application_olevel_sittings', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('application_olevel_results', true);
+        $this->forge->createTable('application_olevel_results');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -109,7 +109,7 @@ class CreateApplicantSubmissionTables extends Migration
         $this->forge->addUniqueKey(['tenant_id', 'applicant_application_id'], 'uq_application_submission_snapshot');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('application_submission_snapshots', true);
+        $this->forge->createTable('application_submission_snapshots');
 
         $this->forge->addField($this->auditedFields([
             'event_name' => ['type' => 'VARCHAR', 'constraint' => 120],
@@ -123,7 +123,7 @@ class CreateApplicantSubmissionTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addKey(['tenant_id', 'event_name', 'status'], false, false, 'idx_admission_notification_event');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_notification_outbox', true);
+        $this->forge->createTable('admission_notification_outbox');
     }
 
     public function down()

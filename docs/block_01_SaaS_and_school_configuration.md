@@ -641,7 +641,7 @@ The system must support:
 * Linking user to tenant
 * Assigning user tenant status
 * Assigning primary tenant
-* Switching tenant where user belongs to more than one tenant
+* Permanent binding of each normal account to exactly one tenant
 * Preventing access to non-member tenants
 
 ### Tenant Membership Statuses
@@ -655,7 +655,10 @@ The system must support:
 
 Authentication alone does not grant tenant access.
 
-A user must be authenticated and must have active membership in the current tenant.
+A user must be authenticated and must have one permanent tenant membership whose
+active lifecycle state exactly matches the requested tenant. Normal users never
+switch tenants. The same person requires a separate account and credential for a
+different school.
 
 ### Audit Requirements
 

@@ -5,8 +5,6 @@ namespace App\Controllers\Tenant;
 use App\Controllers\BaseController;
 use App\Models\MembershipAuthorityModel;
 use App\Models\OperationalAuthorityModel;
-use App\Models\TenantIamGroupAssignmentModel;
-use App\Models\TenantMembershipModel;
 use App\Traits\ApiResponseTrait;
 
 class AccessController extends BaseController
@@ -26,13 +24,21 @@ class AccessController extends BaseController
             return $this->fail('Validation failed.', $this->validator->getErrors(), 422);
         }
 
-        $payload['status'] ??= 'active';
-        $payload['is_active'] = $payload['status'] === 'active' ? 1 : 0;
+        if (($payload['status'] ?? 'active') !== 'active') {
+            return $this->fail('Validation failed.', ['status' => 'New permanent bindings must begin active.'], 422);
+        }
 
-        $id = (new TenantMembershipModel())->insert($this->withTenant($payload), true);
-        $this->audit('tenant.membership.create', 'tenant_membership', $id);
+        try {
+            $membership = service('tenantIdentity')->bindUser(
+                (int) $payload['user_id'],
+                service('tenantContextManager')->current(),
+                (string) ($payload['membership_label'] ?? 'Tenant account')
+            );
+        } catch (\InvalidArgumentException $exception) {
+            return $this->fail('Membership could not be created.', ['membership' => $exception->getMessage()], 422);
+        }
 
-        return $this->ok('Tenant membership created.', ['id' => $id], 201);
+        return $this->ok('Tenant membership created.', ['id' => $membership['id']], 201);
     }
 
     public function assignGroup()
@@ -48,16 +54,11 @@ class AccessController extends BaseController
             return $this->fail('Validation failed.', ['user_id' => 'User must be an active tenant member before group assignment.'], 422);
         }
 
-        $id = (new TenantIamGroupAssignmentModel())->insert($payload, true);
-        $this->audit('tenant.iam_group.assign', 'tenant_iam_group_assignment', $id);
-
-        // A tenant super administrator is the default owner of website setup.
-        // Provisioning is idempotent so retries do not duplicate grants.
-        if ($payload['group_name'] === 'tenant_super_admin') {
-            service('websiteAuthorityProvisioner')->provisionTenantSuperAdmin((int) $payload['user_id']);
-        }
-
-        return $this->ok('Tenant IAM group assigned.', ['id' => $id], 201);
+        return $this->fail(
+            'Legacy tenant IAM group writes are retired.',
+            ['group_name' => 'Assign the single primary broad group through Shield account provisioning.'],
+            410
+        );
     }
 
     public function createAuthority()
@@ -108,13 +109,6 @@ class AccessController extends BaseController
         return $this->ok('Navigation resolved.', ['items' => service('navigationResolver')->tenantItems()]);
     }
 
-    private function withTenant(array $payload): array
-    {
-        $context = service('tenantContextManager')->current();
-        $payload['tenant_id'] = $context->tenantId;
-
-        return $payload;
-    }
     private function audit(string $action, string $targetType, int|string $targetId): void
     {
         service('auditLogger')->record($action, [

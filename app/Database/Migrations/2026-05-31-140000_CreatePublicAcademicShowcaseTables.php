@@ -31,7 +31,7 @@ class CreatePublicAcademicShowcaseTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('department_id', 'departments', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('featured_media_id', 'media_files', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->createTable('department_public_profiles', true);
+        $this->forge->createTable('department_public_profiles');
 
         $this->forge->addField($this->profileFields([
             'programme_id' => ['type' => 'INT', 'unsigned' => true],
@@ -54,7 +54,7 @@ class CreatePublicAcademicShowcaseTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('programme_id', 'programmes', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('featured_media_id', 'media_files', 'id', 'SET NULL', 'CASCADE');
-        $this->forge->createTable('programme_public_profiles', true);
+        $this->forge->createTable('programme_public_profiles');
 
         $this->forge->addField($this->profileFields([
             'title' => ['type' => 'VARCHAR', 'constraint' => 255],
@@ -78,7 +78,7 @@ class CreatePublicAcademicShowcaseTables extends Migration
         $this->forge->addUniqueKey(['tenant_id', 'slug'], 'uq_admission_information_slug');
         $this->forge->addKey(['tenant_id', 'status'], false, false, 'idx_admission_information_status');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_information_pages', true);
+        $this->forge->createTable('admission_information_pages');
     }
 
     public function down()
