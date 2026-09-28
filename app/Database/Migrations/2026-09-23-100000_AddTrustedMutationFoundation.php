@@ -52,7 +52,7 @@ class AddTrustedMutationFoundation extends Migration
         $this->forge->addUniqueKey(['tenant_id', 'operation', 'idempotency_key'], 'uq_idempotency_operation_key');
         $this->forge->addKey(['tenant_id', 'expires_at'], false, false, 'idx_idempotency_expiry');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'RESTRICT', 'CASCADE', 'fk_idempotency_tenant');
-        $this->forge->createTable('idempotency_records', true);
+        $this->forge->createTable('idempotency_records');
 
         $this->forge->addField([
             'tenant_id' => ['type' => 'INT', 'unsigned' => true],
@@ -62,7 +62,7 @@ class AddTrustedMutationFoundation extends Migration
         ]);
         $this->forge->addKey(['tenant_id', 'namespace'], true, true, 'pk_tenant_cache_revision');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'RESTRICT', 'CASCADE', 'fk_cache_revision_tenant');
-        $this->forge->createTable('tenant_cache_revisions', true);
+        $this->forge->createTable('tenant_cache_revisions');
 
         if ($this->db->DBDriver === 'SQLite3') {
             $applications = $this->db->prefixTable('applicant_applications');

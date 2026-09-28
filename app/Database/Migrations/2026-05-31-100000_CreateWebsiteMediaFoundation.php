@@ -40,7 +40,7 @@ class CreateWebsiteMediaFoundation extends Migration
         $this->forge->addKey(['tenant_id', 'visibility', 'category'], false, false, 'idx_media_tenant_visibility_category');
         $this->forge->addUniqueKey(['tenant_id', 'storage_path'], 'uq_media_tenant_storage_path');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('media_files', true);
+        $this->forge->createTable('media_files');
     }
 
     public function down()

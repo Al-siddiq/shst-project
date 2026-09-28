@@ -32,9 +32,9 @@ CREATE TABLE tenant_membership_history (
     PRIMARY KEY (id),
     KEY idx_membership_history_lookup (tenant_id, user_id, created_at),
     CONSTRAINT fk_membership_history_membership FOREIGN KEY (tenant_membership_id)
-        REFERENCES tenant_memberships (id) ON DELETE CASCADE ON UPDATE RESTRICT,
+        REFERENCES tenant_memberships (id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_membership_history_tenant FOREIGN KEY (tenant_id)
-        REFERENCES tenants (id) ON DELETE CASCADE ON UPDATE RESTRICT
+        REFERENCES tenants (id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE platform_support_contexts (
@@ -57,7 +57,7 @@ CREATE TABLE platform_support_contexts (
     KEY idx_platform_support_actor (platform_user_id, status, expires_at),
     KEY idx_platform_support_tenant (tenant_id, status, expires_at),
     CONSTRAINT fk_platform_support_tenant FOREIGN KEY (tenant_id)
-        REFERENCES tenants (id) ON DELETE CASCADE ON UPDATE RESTRICT
+        REFERENCES tenants (id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Recovery/rollback limitations:

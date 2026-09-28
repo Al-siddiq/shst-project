@@ -18,7 +18,7 @@ CREATE TABLE in_app_notifications (
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY idx_in_app_recipient (tenant_id, user_id, read_at, created_at),
-  CONSTRAINT fk_in_app_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE ON UPDATE RESTRICT
+  CONSTRAINT fk_in_app_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Rollback drops in-app delivery history. Export it first if retention policy

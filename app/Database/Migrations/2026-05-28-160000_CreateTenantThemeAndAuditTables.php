@@ -25,7 +25,7 @@ class CreateTenantThemeAndAuditTables extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey('tenant_id');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('tenant_themes', true);
+        $this->forge->createTable('tenant_themes');
 
         // Department color identities are separated from academic departments for UI branding.
         $this->forge->addField([
@@ -44,7 +44,7 @@ class CreateTenantThemeAndAuditTables extends Migration
         $this->forge->addUniqueKey(['tenant_id', 'department_id'], 'uq_department_identity');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('department_id', 'departments', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('department_identities', true);
+        $this->forge->createTable('department_identities');
 
         // Unified audit log for platform and tenant configuration/access activity.
         $this->forge->addField([
@@ -63,7 +63,7 @@ class CreateTenantThemeAndAuditTables extends Migration
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addKey(['tenant_id', 'action']);
-        $this->forge->createTable('audit_logs', true);
+        $this->forge->createTable('audit_logs');
     }
 
     public function down()

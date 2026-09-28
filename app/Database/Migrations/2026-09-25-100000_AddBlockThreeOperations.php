@@ -31,7 +31,7 @@ class AddBlockThreeOperations extends Migration
         $this->forge->addKey('id', true);
         $this->forge->addKey(['tenant_id', 'user_id', 'read_at', 'created_at'], false, false, 'idx_in_app_recipient');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'RESTRICT', 'CASCADE', 'fk_in_app_tenant');
-        $this->forge->createTable('in_app_notifications', true);
+        $this->forge->createTable('in_app_notifications');
 
         if ($this->db->DBDriver === 'SQLite3') {
             $table = $this->db->prefixTable('application_documents');

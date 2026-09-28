@@ -23,7 +23,7 @@ class CreateAdmissionAcceptanceClearanceTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_offer_id', 'admission_offers', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_offer_acceptances', true);
+        $this->forge->createTable('admission_offer_acceptances');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -39,7 +39,7 @@ class CreateAdmissionAcceptanceClearanceTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_offer_id', 'admission_offers', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_clearance_statuses', true);
+        $this->forge->createTable('admission_clearance_statuses');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -53,7 +53,7 @@ class CreateAdmissionAcceptanceClearanceTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_offer_id', 'admission_offers', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_conversion_eligibility_markers', true);
+        $this->forge->createTable('admission_conversion_eligibility_markers');
     }
 
     public function down()

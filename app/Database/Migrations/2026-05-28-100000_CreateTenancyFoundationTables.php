@@ -26,7 +26,7 @@ class CreateTenancyFoundationTables extends Migration
         ]);
         $this->forge->addKey('id', true);
         $this->forge->addUniqueKey('slug');
-        $this->forge->createTable('tenants', true);
+        $this->forge->createTable('tenants');
 
         // Domain/subdomain registry for tenant resolution
         $this->forge->addField([
@@ -46,7 +46,7 @@ class CreateTenancyFoundationTables extends Migration
         $this->forge->addUniqueKey('domain');
         $this->forge->addKey('tenant_id');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('tenant_domains', true);
+        $this->forge->createTable('tenant_domains');
 
         // User-to-tenant membership lookup for resolution fallback.
         $this->forge->addField([
@@ -65,7 +65,7 @@ class CreateTenancyFoundationTables extends Migration
         $this->forge->addUniqueKey(['tenant_id', 'user_id']);
         $this->forge->addKey('user_id');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('tenant_memberships', true);
+        $this->forge->createTable('tenant_memberships');
     }
 
     public function down()

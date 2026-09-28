@@ -26,7 +26,7 @@ class CreateAdmissionConfigurationTables extends Migration
         $this->forge->addKey(['tenant_id', 'status', 'is_public', 'opens_at', 'closes_at'], false, false, 'idx_admission_cycle_public');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('academic_session_id', 'academic_sessions', 'id', 'CASCADE', 'RESTRICT');
-        $this->forge->createTable('admission_cycles', true);
+        $this->forge->createTable('admission_cycles');
 
         $this->forge->addField($this->auditedFields([
             'admission_cycle_id' => ['type' => 'INT', 'unsigned' => true],
@@ -48,7 +48,7 @@ class CreateAdmissionConfigurationTables extends Migration
         $this->forge->addForeignKey('programme_id', 'programmes', 'id', 'CASCADE', 'RESTRICT');
         $this->forge->addForeignKey('department_id', 'departments', 'id', 'CASCADE', 'RESTRICT');
         $this->forge->addForeignKey('entry_level_id', 'levels', 'id', 'SET NULL', 'RESTRICT');
-        $this->forge->createTable('admission_programme_openings', true);
+        $this->forge->createTable('admission_programme_openings');
 
         $this->forge->addField($this->auditedFields([
             'admission_cycle_id' => ['type' => 'INT', 'unsigned' => true],
@@ -68,7 +68,7 @@ class CreateAdmissionConfigurationTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_cycle_id', 'admission_cycles', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('programme_opening_id', 'admission_programme_openings', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_requirement_definitions', true);
+        $this->forge->createTable('admission_requirement_definitions');
 
         $this->forge->addField($this->auditedFields([
             'admission_cycle_id' => ['type' => 'INT', 'unsigned' => true],
@@ -86,7 +86,7 @@ class CreateAdmissionConfigurationTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_cycle_id', 'admission_cycles', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('programme_opening_id', 'admission_programme_openings', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_subject_requirements', true);
+        $this->forge->createTable('admission_subject_requirements');
 
         $this->forge->addField($this->auditedFields([
             'admission_cycle_id' => ['type' => 'INT', 'unsigned' => true],
@@ -104,7 +104,7 @@ class CreateAdmissionConfigurationTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_cycle_id', 'admission_cycles', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('programme_opening_id', 'admission_programme_openings', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_document_requirements', true);
+        $this->forge->createTable('admission_document_requirements');
     }
 
     public function down()

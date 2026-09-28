@@ -24,7 +24,7 @@ class CreateAdmissionDecisionOfferTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_cycle_id', 'admission_cycles', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('programme_opening_id', 'admission_programme_openings', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_shortlist_batches', true);
+        $this->forge->createTable('admission_shortlist_batches');
 
         $this->forge->addField($this->auditedFields([
             'shortlist_batch_id' => ['type' => 'INT', 'unsigned' => true],
@@ -38,7 +38,7 @@ class CreateAdmissionDecisionOfferTables extends Migration
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('shortlist_batch_id', 'admission_shortlist_batches', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_shortlist_entries', true);
+        $this->forge->createTable('admission_shortlist_entries');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -57,7 +57,7 @@ class CreateAdmissionDecisionOfferTables extends Migration
         $this->forge->addKey(['tenant_id', 'applicant_application_id', 'is_current'], false, false, 'idx_admission_decision_current');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->createTable('admission_decisions', true);
+        $this->forge->createTable('admission_decisions');
 
         $this->forge->addField($this->auditedFields([
             'applicant_application_id' => ['type' => 'INT', 'unsigned' => true],
@@ -78,7 +78,7 @@ class CreateAdmissionDecisionOfferTables extends Migration
         $this->forge->addForeignKey('applicant_application_id', 'applicant_applications', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('admission_decision_id', 'admission_decisions', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('offered_programme_opening_id', 'admission_programme_openings', 'id', 'CASCADE', 'RESTRICT');
-        $this->forge->createTable('admission_offers', true);
+        $this->forge->createTable('admission_offers');
     }
 
     public function down()

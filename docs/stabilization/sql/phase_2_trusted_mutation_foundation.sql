@@ -56,7 +56,7 @@ CREATE TABLE idempotency_records (
   PRIMARY KEY (id),
   UNIQUE KEY uq_idempotency_operation_key (tenant_id, operation, idempotency_key),
   KEY idx_idempotency_expiry (tenant_id, expires_at),
-  CONSTRAINT fk_idempotency_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE ON UPDATE RESTRICT
+  CONSTRAINT fk_idempotency_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE tenant_cache_revisions (
@@ -65,7 +65,7 @@ CREATE TABLE tenant_cache_revisions (
   revision BIGINT UNSIGNED NOT NULL DEFAULT 1,
   updated_at DATETIME NULL,
   PRIMARY KEY (tenant_id, namespace),
-  CONSTRAINT fk_cache_revision_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE ON UPDATE RESTRICT
+  CONSTRAINT fk_cache_revision_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE applicant_profiles ADD UNIQUE KEY uq_applicant_profiles_tenant_id (tenant_id, id);

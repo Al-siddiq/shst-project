@@ -42,7 +42,7 @@ class HardenIdentityTenantBoundary extends Migration
         $this->forge->addKey(['tenant_id', 'user_id', 'created_at'], false, false, 'idx_membership_history_lookup');
         $this->forge->addForeignKey('tenant_membership_id', 'tenant_memberships', 'id', 'RESTRICT', 'CASCADE', 'fk_membership_history_membership');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'RESTRICT', 'CASCADE', 'fk_membership_history_tenant');
-        $this->forge->createTable('tenant_membership_history', true);
+        $this->forge->createTable('tenant_membership_history');
 
         $this->forge->addField([
             'id' => ['type' => 'BIGINT', 'unsigned' => true, 'auto_increment' => true],
@@ -65,7 +65,7 @@ class HardenIdentityTenantBoundary extends Migration
         $this->forge->addKey(['platform_user_id', 'status', 'expires_at'], false, false, 'idx_platform_support_actor');
         $this->forge->addKey(['tenant_id', 'status', 'expires_at'], false, false, 'idx_platform_support_tenant');
         $this->forge->addForeignKey('tenant_id', 'tenants', 'id', 'RESTRICT', 'CASCADE', 'fk_platform_support_tenant');
-        $this->forge->createTable('platform_support_contexts', true);
+        $this->forge->createTable('platform_support_contexts');
     }
 
     public function down(): void
